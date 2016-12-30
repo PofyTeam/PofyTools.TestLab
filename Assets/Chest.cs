@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using PofyTools;
+using PofyTools.Distribution;
+using PofyTools.Pool;
 
 public class Chest : StateableActor, IAnimated, ICollidable
 {
@@ -45,6 +47,13 @@ public class Chest : StateableActor, IAnimated, ICollidable
 
 	public ParticleSystem _fx{ get; private set; }
 
+	public Chance chanceToGold;
+	public Transform goldTransform;
+
+	public Deck<int> goldValues;
+	public ScreenInfo infoPrefab;
+	public Pool<ScreenInfo> infoPool;
+
 	#endregion
 
 	#region Mono
@@ -86,6 +95,19 @@ public class Chest : StateableActor, IAnimated, ICollidable
 	public override void ConstructAvailableStates ()
 	{
 		this.openState = new OpenChestState (this);
+		this.chanceToGold = new Chance (0.25f);
+
+		Deck<int>.Card card10 = new Deck<int>.Card (10, 1000);
+		Deck<int>.Card card25 = new Deck<int>.Card (25, 500);
+		Deck<int>.Card card50 = new Deck<int>.Card (50, 100);
+		Deck<int>.Card card250 = new Deck<int>.Card (250, 25);
+		Deck<int>.Card card1000 = new Deck<int>.Card (1000, 5);
+		Deck<int>.Card card7777 = new Deck<int>.Card (7777, 1);
+
+		this.goldValues = new Deck<int> (card10, card25, card50, card250, card1000, card7777);
+		this.goldValues = this.goldValues.CreateDistributionDeck ();
+
+		this.infoPool = new Pool<ScreenInfo> (this.infoPrefab, 4, true);
 	}
 
 	public override void InitializeStateStack ()
@@ -116,9 +138,28 @@ public class OpenChestState:StateObject<Chest>
 
 	public override void EnterState ()
 	{
+		this._controlledObject.goldTransform.gameObject.SetActive (false);
+		if (this._controlledObject.chanceToGold.RandomValue) {
+			
+			this._controlledObject.goldTransform.gameObject.SetActive (true);
+			ScreenInfo newInfo = this._controlledObject.infoPool.Obtain ();
+
+			newInfo.message.text = this._controlledObject.goldValues.PickNextCard ().instance.ToString ();
+			newInfo.target = this._controlledObject.selfTransform;
+			newInfo.ResetFromPool ();
+
+			this._controlledObject._fx.Play ();
+		} else {
+			ScreenInfo newInfo = this._controlledObject.infoPool.Obtain ();
+
+			newInfo.message.text = "KITA!";
+			newInfo.target = this._controlledObject.selfTransform;
+			newInfo.ResetFromPool ();
+		}
+
 		this._controlledObject.selfRigidbody.isKinematic = true;
 		this._controlledObject.selfAnimator.SetTrigger ("Open");
-		this._controlledObject._fx.Play ();
+
 	}
 
 	public override void ExitState ()
