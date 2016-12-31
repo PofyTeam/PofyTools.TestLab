@@ -4,6 +4,7 @@ using UnityEngine;
 using PofyTools;
 using PofyTools.Distribution;
 using PofyTools.Pool;
+using PofyTools.Sound;
 
 public class Chest : StateableActor, IAnimated, ICollidable
 {
@@ -53,6 +54,11 @@ public class Chest : StateableActor, IAnimated, ICollidable
 	public Deck<int> goldValues;
 	public ScreenInfo infoPrefab;
 	public Pool<ScreenInfo> infoPool;
+	[Header ("Sounds")]
+	public AudioClip chestHit;
+	public AudioClip chestOpen;
+	public AudioClip chestClose;
+	public AudioClip coins;
 
 	#endregion
 
@@ -87,6 +93,14 @@ public class Chest : StateableActor, IAnimated, ICollidable
 		}
 	}
 
+	void OnCollisionEnter (Collision collision)
+	{
+		float volume = collision.impulse.magnitude;
+		//Debug.LogError (volume);
+		volume = volume / 3000;
+//		if (this.hitSource == null || !this.hitSource.isPlaying)
+		SoundManager.Play (clip: this.chestHit, volume: volume, lowPriority: true);
+	}
 
 	#endregion
 
@@ -136,6 +150,8 @@ public class OpenChestState:StateObject<Chest>
 		this._hasUpdate = true;
 	}
 
+	private AudioSource openSource;
+
 	public override void EnterState ()
 	{
 		this._controlledObject.goldTransform.gameObject.SetActive (false);
@@ -147,7 +163,7 @@ public class OpenChestState:StateObject<Chest>
 			newInfo.message.text = this._controlledObject.goldValues.PickNextCard ().instance.ToString ();
 			newInfo.target = this._controlledObject.selfTransform;
 			newInfo.ResetFromPool ();
-
+			this.openSource = SoundManager.PlayVariation (this._controlledObject.coins);
 			this._controlledObject._fx.Play ();
 		} else {
 			ScreenInfo newInfo = this._controlledObject.infoPool.Obtain ();
@@ -159,6 +175,7 @@ public class OpenChestState:StateObject<Chest>
 
 		this._controlledObject.selfRigidbody.isKinematic = true;
 		this._controlledObject.selfAnimator.SetTrigger ("Open");
+		this.openSource = SoundManager.PlayVariation (this._controlledObject.chestOpen);
 
 	}
 
@@ -166,6 +183,9 @@ public class OpenChestState:StateObject<Chest>
 	{
 		this._controlledObject.selfRigidbody.isKinematic = false;
 		this._controlledObject.selfAnimator.SetTrigger ("Close");
+		this.openSource = SoundManager.PlayVariation (this._controlledObject.chestClose);
 		this._controlledObject._fx.Stop ();
 	}
+
+
 }
