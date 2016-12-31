@@ -181,7 +181,7 @@ public class OpenChestState:StateObject<Chest>
 
 	public override void ExitState ()
 	{
-		this._controlledObject.selfRigidbody.isKinematic = false;
+//		this._controlledObject.selfRigidbody.isKinematic = false;
 		this._controlledObject.selfAnimator.SetTrigger ("Close");
 		this.openSource = SoundManager.PlayVariation (this._controlledObject.chestClose);
 		this._controlledObject._fx.Stop ();
