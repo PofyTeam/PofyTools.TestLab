@@ -109,16 +109,17 @@ public class Chest : StateableActor, IAnimated, ICollidable
 	public override void ConstructAvailableStates ()
 	{
 		this.openState = new OpenChestState (this);
-		this.chanceToGold = new Chance (0.25f);
-
+		this.chanceToGold = new Chance (0.9f);
+		Deck<int>.Card card1 = new Deck<int>.Card (1, 5000);
 		Deck<int>.Card card10 = new Deck<int>.Card (10, 1000);
 		Deck<int>.Card card25 = new Deck<int>.Card (25, 500);
 		Deck<int>.Card card50 = new Deck<int>.Card (50, 100);
 		Deck<int>.Card card250 = new Deck<int>.Card (250, 25);
+		Deck<int>.Card card500 = new Deck<int>.Card (500, 13);
 		Deck<int>.Card card1000 = new Deck<int>.Card (1000, 5);
 		Deck<int>.Card card7777 = new Deck<int>.Card (7777, 1);
 
-		this.goldValues = new Deck<int> (card10, card25, card50, card250, card1000, card7777);
+		this.goldValues = new Deck<int> (card1, card10, card25, card50, card250, card500, card1000, card7777);
 		this.goldValues = this.goldValues.CreateDistributionDeck ();
 
 		this.infoPool = new Pool<ScreenInfo> (this.infoPrefab, 4, true);
