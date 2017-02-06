@@ -6,15 +6,16 @@ using PofyTools.Sound;
 public class PlayMusicOnStart : MonoBehaviour
 {
 
-	// Use this for initialization
-	void Start ()
-	{
-		SoundManager.PlayMusic ();
-	}
+    // Use this for initialization
+    void Start()
+    {
+        SoundManager.PlayMusic();
+        SoundManager.DockMusic(0.05f, 0.5f);
+    }
 	
-	// Update is called once per frame
-	void Update ()
-	{
+    // Update is called once per frame
+    void Update()
+    {
 		
-	}
+    }
 }
