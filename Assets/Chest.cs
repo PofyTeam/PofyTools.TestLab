@@ -93,13 +93,13 @@ public class Chest : StateableActor, IAnimated, ICollidable
         {
             this._isOpen = true;
             AddState(this.openState);
-            SoundManager.DockMusic(1, 0.5f);
+            SoundManager.DuckMusic(1, 0.5f);
         }
         else
         {
             this._isOpen = false;
             RemoveState(this.openState);
-            SoundManager.DockMusic(0.05f, 0.5f);
+            SoundManager.DuckMusic(0.05f, 0.5f);
         }
     }
 
