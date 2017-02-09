@@ -66,6 +66,8 @@ public class Chest : StateableActor, IAnimated, ICollidable
     public AudioClip chestClose;
     public AudioClip coins;
 
+    public AudioClip winMusic;
+
     #endregion
 
     #region Mono
@@ -93,13 +95,13 @@ public class Chest : StateableActor, IAnimated, ICollidable
         {
             this._isOpen = true;
             AddState(this.openState);
-            SoundManager.DuckMusic(1, 0.5f);
+//            SoundManager.DuckMusic(1, 0.5f);
         }
         else
         {
             this._isOpen = false;
             RemoveState(this.openState);
-            SoundManager.DuckMusic(0.05f, 0.5f);
+//            SoundManager.DuckMusic(0.05f, 0.5f);
         }
     }
 
@@ -176,6 +178,7 @@ public class OpenChestState:StateObject<Chest>
             newInfo.target = this._controlledObject.selfTransform;
             newInfo.ResetFromPool();
             this._openSource = SoundManager.PlayVariation(this._controlledObject.coins);
+            SoundManager.PlayCustomMusic(this._controlledObject.winMusic);
             this._controlledObject._fx.Play();
         }
         else
@@ -198,6 +201,7 @@ public class OpenChestState:StateObject<Chest>
 //		this._controlledObject.selfRigidbody.isKinematic = false;
         this._controlledObject.selfAnimator.SetTrigger("Close");
         this._openSource = SoundManager.PlayVariation(this._controlledObject.chestClose);
+        SoundManager.PlayCustomMusic(SoundManager.Sounds.music);
         this._controlledObject._fx.Stop();
     }
 

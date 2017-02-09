@@ -10,7 +10,7 @@ public class PlayMusicOnStart : MonoBehaviour
     void Start()
     {
         SoundManager.PlayMusic();
-        SoundManager.DuckMusic(0.05f, 0.5f);
+//        SoundManager.DuckMusic(0.05f, 0.5f);
     }
 	
     // Update is called once per frame
