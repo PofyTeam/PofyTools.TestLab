@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public delegate void IntDelegate (int value);
-public delegate void UpdateDelegate ();
+
 public class GameController : MonoBehaviour
 {
 	public static GameController Game;
@@ -12,11 +11,11 @@ public class GameController : MonoBehaviour
 		get{ return this.currencyCount; }
 		private set {
 			this.currencyCount = value;
-			this.currencyChanged (this.currencyCount);
+			EventManager.Events.currencyChanged (this.currencyCount);
 		}
 	}
 
-	public IntDelegate currencyChanged;
+
 
 	void Awake ()
 	{
