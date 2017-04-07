@@ -1,4 +1,6 @@
-﻿
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+
 Shader "PofyTools/Fragment/Toon/Advanced" {
   Properties {
     _Color ("Color (A - Ambience)", Color) = (1,1,1,1)
@@ -24,7 +26,7 @@ struct v2f {
  
 v2f vert(appdata v) {
 	v2f o;
-	o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+	o.pos = UnityObjectToClipPos(v.vertex);
  	float4 worldPos = mul(unity_ObjectToWorld,v.vertex);
 	half3 norm   = normalize(mul ((half3x3)UNITY_MATRIX_IT_MV, v.normal));
 	half2 offset = TransformViewToProjection(norm.xy);
@@ -101,7 +103,7 @@ ENDCG
 		vertexOutput vert(vertexInput v){
 			vertexOutput o;
 			//Basic
-			o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+			o.pos = UnityObjectToClipPos(v.vertex);
 			o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 
 			//World / Normal

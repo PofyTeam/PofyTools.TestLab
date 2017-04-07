@@ -10,15 +10,15 @@ public class CameraController : StateableActor
 
 	#region Mono
 
-	public override void Subscribe ()
-	{
-		base.Subscribe ();
-	}
-
-	public override void Unsubscribe ()
-	{
-		base.Unsubscribe ();
-	}
+//	public override void Subscribe ()
+//	{
+//		base.Subscribe ();
+//	}
+//
+//	public override void Unsubscribe ()
+//	{
+//		base.Unsubscribe ();
+//	}
 
 	protected override void Awake ()
 	{
@@ -30,15 +30,15 @@ public class CameraController : StateableActor
 
 	#region implemented abstract members of StateableActor
 
-	public override void ConstructAvailableStates ()
-	{
-//		throw new System.NotImplementedException ();
-	}
-
-	public override void InitializeStateStack ()
-	{
-//		throw new System.NotImplementedException ();
-	}
+//	public override void ConstructAvailableStates ()
+//	{
+////		throw new System.NotImplementedException ();
+//	}
+//
+//	public override void InitializeStateStack ()
+//	{
+////		throw new System.NotImplementedException ();
+//	}
 
 	#endregion
 }

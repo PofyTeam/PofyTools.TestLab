@@ -1,4 +1,6 @@
-﻿Shader"PofyTools/Fragment/Specular Rim"{
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+Shader"PofyTools/Fragment/Specular Rim"{
 	Properties{
 		_Color("Tint",Color) =(1.0,1.0,1.0,1.0)
 		_SpecColor("Specular Color",Color) = (1.0,1.0,1.0,1.0)
@@ -46,7 +48,7 @@
 				o.posWorld = mul(unity_ObjectToWorld, v.vertex);
 				o.normalDir = normalize( mul(float4(v.normal,0.0), unity_WorldToObject).xyz);
 
-				o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+				o.pos = UnityObjectToClipPos(v.vertex);
 
 				return o;
 			}

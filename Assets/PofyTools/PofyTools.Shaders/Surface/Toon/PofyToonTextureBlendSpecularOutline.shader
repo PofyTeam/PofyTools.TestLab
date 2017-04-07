@@ -1,4 +1,6 @@
-﻿Shader "PofyTools/Surface/Toon/Texture Blend Specular Outline" {
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+Shader "PofyTools/Surface/Toon/Texture Blend Specular Outline" {
   Properties {
     _Color ("Color", Color) = (1,1,1,1)
     _MainTex ("Albedo (RGB)", 2D) = "white" {}
@@ -30,7 +32,7 @@ fixed4 _OutlineColor;
  
 v2f vert(appdata v) {
 	v2f o;
-	o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+	o.pos = UnityObjectToClipPos(v.vertex);
  
 	half3 norm   = normalize(mul ((half3x3)UNITY_MATRIX_IT_MV, v.normal));
 	half2 offset = TransformViewToProjection(norm.xy);
