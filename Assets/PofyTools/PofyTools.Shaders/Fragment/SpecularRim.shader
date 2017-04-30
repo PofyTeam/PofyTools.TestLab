@@ -55,7 +55,7 @@ Shader"PofyTools/Fragment/Specular Rim"{
 
 			//fragment function
 
-			float4 frag(vertexOutput i) : COLOR{
+			float4 frag(vertexOutput i) : SV_Target{
 				float3 c;
 
 				float3 normalDirection = i.normalDir;
