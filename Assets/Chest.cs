@@ -72,34 +72,47 @@ public class Chest : StateableActor, IAnimated, ICollidable
 
     #region Mono
 
-    protected override void Awake()
+    //    protected override void Awake()
+    //    {
+    //
+    //
+    //        base.Awake();
+    //
+    //
+    //    }
+    //
+    public override bool Initialize()
     {
-        this._selfAnimator = GetComponent<Animator>();
-        this._selfRigidBody = GetComponent<Rigidbody>();
+        if (base.Initialize())
+        {
+            this._selfAnimator = GetComponent<Animator>();
+            this._selfRigidBody = GetComponent<Rigidbody>();
 
-        base.Awake();
-        this._fx = Instantiate<ParticleSystem>(this.effectPrefab);
-        this._fx.transform.parent = this.fxSocket;
-        this._fx.transform.localPosition = Vector3.zero;
-
+            this._fx = Instantiate<ParticleSystem>(this.effectPrefab);
+            this._fx.transform.parent = this.fxSocket;
+            this._fx.transform.localPosition = Vector3.zero;
+            return true;
+        }
+        return false;
     }
 
     protected OpenChestState openState;
 
-    protected bool _isOpen{ get; private set; }
+    public bool isOpen
+    {
+        get{ return this.openState.isActive; }
+    }
 
     [ContextMenu("Open Chest")]
     public void OnRayHit()
     {
-        if (!this._isOpen)
+        if (!this.isOpen)
         {
-            this._isOpen = true;
             AddState(this.openState);
 //            SoundManager.DuckMusic(1, 0.5f);
         }
         else
         {
-            this._isOpen = false;
             RemoveState(this.openState);
 //            SoundManager.DuckMusic(0.05f, 0.5f);
         }
@@ -148,61 +161,62 @@ public class Chest : StateableActor, IAnimated, ICollidable
 public class OpenChestState:StateObject<Chest>
 {
     public OpenChestState()
+        : base()
     {
-        InitializeState();
     }
 
     public OpenChestState(Chest co)
+        : base(co)
     {
-        this._controlledObject = co;
-        InitializeState();
     }
 
     public override void InitializeState()
     {
-        this._hasUpdate = true;
+        this.hasUpdate = true;
+        base.InitializeState();
     }
 
     private AudioSource _openSource;
 
     public override void EnterState()
     {
-        this._controlledObject.goldTransform.gameObject.SetActive(false);
-        if (this._controlledObject.chanceToGold.RandomValue)
+        this.controlledObject.goldTransform.gameObject.SetActive(false);
+        if (this.controlledObject.chanceToGold.RandomValue)
         {
 			
-            this._controlledObject.goldTransform.gameObject.SetActive(true);
-            ScreenInfo newInfo = this._controlledObject.infoPool.Obtain();
+            this.controlledObject.goldTransform.gameObject.SetActive(true);
+            ScreenInfo newInfo = this.controlledObject.infoPool.Obtain();
 
-            newInfo.message.text = this._controlledObject.goldValues.PickNextCard().instance.ToString();
-            newInfo.target = this._controlledObject.selfTransform;
+            newInfo.message.text = this.controlledObject.goldValues.PickNextCard().instance.ToString();
+            newInfo.target = this.controlledObject.selfTransform;
             newInfo.ResetFromPool();
-            this._openSource = SoundManager.PlayVariation(this._controlledObject.coins);
-            SoundManager.PlayCustomMusic(this._controlledObject.winMusic);
-            this._controlledObject._fx.Play();
+            this._openSource = SoundManager.PlayVariation(this.controlledObject.coins);
+            SoundManager.PlayCustomMusic(this.controlledObject.winMusic);
+            this.controlledObject._fx.Play();
         }
         else
         {
-            ScreenInfo newInfo = this._controlledObject.infoPool.Obtain();
+            ScreenInfo newInfo = this.controlledObject.infoPool.Obtain();
 
             newInfo.message.text = "KITA!";
-            newInfo.target = this._controlledObject.selfTransform;
+            newInfo.target = this.controlledObject.selfTransform;
             newInfo.ResetFromPool();
         }
 
-        this._controlledObject.selfRigidbody.isKinematic = true;
-        this._controlledObject.selfAnimator.SetTrigger("Open");
-        this._openSource = SoundManager.PlayVariation(this._controlledObject.chestOpen);
-
+        this.controlledObject.selfRigidbody.isKinematic = true;
+        this.controlledObject.selfAnimator.SetTrigger("Open");
+        this._openSource = SoundManager.PlayVariation(this.controlledObject.chestOpen);
+        base.EnterState();
     }
 
     public override void ExitState()
     {
 //		this._controlledObject.selfRigidbody.isKinematic = false;
-        this._controlledObject.selfAnimator.SetTrigger("Close");
-        this._openSource = SoundManager.PlayVariation(this._controlledObject.chestClose);
+        this.controlledObject.selfAnimator.SetTrigger("Close");
+        this._openSource = SoundManager.PlayVariation(this.controlledObject.chestClose);
         SoundManager.PlayCustomMusic(SoundManager.Sounds.music);
-        this._controlledObject._fx.Stop();
+        this.controlledObject._fx.Stop();
+        base.ExitState();
     }
 
 
