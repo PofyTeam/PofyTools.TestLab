@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Globalization;
 
 namespace PofyTools.NameGenerator
 {
@@ -18,8 +19,8 @@ namespace PofyTools.NameGenerator
         public List<NameSet> setNames = new List<NameSet>();
         public List<TitleSet> setTitles = new List<TitleSet>();
 
-        public List<string> subjectPros = new List<string>();
-        public List<string> subjectCons = new List<string>();
+        public List<string> subjectivePros = new List<string>();
+        public List<string> subjectiveCons = new List<string>();
 
         #endregion
 
@@ -63,11 +64,14 @@ namespace PofyTools.NameGenerator
 
         }
 
-        public string GenerateName(string nameSetId = "", string titleSetId = "", bool male = true)
+        public string GenerateName(string nameSetId = "", string titleSetId = "", bool useAdjective = true, bool useSubjective = true, bool useGenetive = true, bool male = true)
         {
 
             NameSet nameSet = null;
             TitleSet titleSet = null;
+            string final = string.Empty;
+            CultureInfo cultureInfo = new CultureInfo("en-US", false);
+            TextInfo textInfo = cultureInfo.TextInfo;
 
             if (string.IsNullOrEmpty(nameSetId))
             {
@@ -76,10 +80,48 @@ namespace PofyTools.NameGenerator
 
             if (this._setNames.TryGetValue(nameSetId, out nameSet))
             {
-                    
+                final = textInfo.ToTitleCase(nameSet.start[Random.Range(0, nameSet.start.Count - 1)].ToLower(cultureInfo));
+                final += nameSet.end[Random.Range(0, nameSet.end.Count - 1)];
             }
 
-            return "";
+            if (this._setTitles.TryGetValue(titleSetId, out titleSet))
+            {
+                if (useAdjective || useSubjective)
+                {
+                    final += " the ";
+
+                    if (useAdjective)
+                    {
+                        final += textInfo.ToTitleCase(titleSet.adjectives[Random.Range(0, titleSet.adjectives.Count - 1)].ToLower(cultureInfo));
+                        final += " ";
+                    }
+
+                    if (useSubjective)
+                    {
+                        TitleSet opposingSet = null;
+
+                        bool opposing = Random.Range(0f, 1f) > 0.5f && this._setTitles.TryGetValue(titleSet.opposingId, out opposingSet);
+                        if (opposing)
+                        {
+                            final += textInfo.ToTitleCase(opposingSet.objectives[Random.Range(0, opposingSet.objectives.Count - 1)].ToLower(cultureInfo));
+                            final += textInfo.ToTitleCase(this.subjectiveCons[Random.Range(0, this.subjectiveCons.Count - 1)].ToLower(cultureInfo));
+                        }
+                        else
+                        {
+                            final += textInfo.ToTitleCase(titleSet.objectives[Random.Range(0, titleSet.objectives.Count - 1)].ToLower(cultureInfo));
+                            final += textInfo.ToTitleCase(this.subjectivePros[Random.Range(0, this.subjectivePros.Count - 1)].ToLower(cultureInfo));
+                        }
+                    }
+                }
+
+                if (useGenetive)
+                    final += " of " + textInfo.ToTitleCase(titleSet.genetives[Random.Range(0, titleSet.genetives.Count - 1)].ToLower(cultureInfo));
+            }
+
+
+            //final = textInfo.ToTitleCase(final);
+
+            return final;
         }
 
 
@@ -115,15 +157,78 @@ namespace PofyTools.NameGenerator
 //            json = UnScramble(json);
 //            json = DecodeFrom64(json);
             JsonUtility.FromJsonOverwrite(json, data);
+            data.PostLoad();
         }
 
+        public void PostLoad()
+        {
+            foreach (var nameset in this.setNames)
+            {
+                for (int i = 0; i < nameset.start.Count; i++)
+                {
+                    nameset.start[i] = nameset.start[i].ToLower();
+                }
+
+                nameset.start.Sort();
+
+
+                for (int i = 0; i < nameset.end.Count; i++)
+                {
+                    nameset.end[i] = nameset.end[i].ToLower();
+                }
+
+                nameset.end.Sort();
+            }
+
+            foreach (var titleset in this.setTitles)
+            {
+                for (int i = 0; i < titleset.adjectives.Count; i++)
+                {
+                    titleset.adjectives[i] = titleset.adjectives[i].ToLower();
+                }
+
+                titleset.adjectives.Sort();
+
+                for (int i = 0; i < titleset.genetives.Count; i++)
+                {
+                    titleset.genetives[i] = titleset.genetives[i].ToLower();
+                }
+
+                titleset.genetives.Sort();
+
+                for (int i = 0; i < titleset.objectives.Count; i++)
+                {
+                    titleset.objectives[i] = titleset.objectives[i].ToLower();
+                }
+
+                titleset.objectives.Sort();
+
+                for (int i = 0; i < titleset.subjectives.Count; i++)
+                {
+                    titleset.subjectives[i] = titleset.subjectives[i].ToLower();
+                }
+
+                titleset.subjectives.Sort();
+            }
+
+            this.subjectiveCons.Sort();
+            this.subjectivePros.Sort();
+
+        }
 
         public static void SaveData(NameData data)
         {
+            data.PreSave();
             string json = JsonUtility.ToJson(data);
 //            json = EncodeTo64(json);
 //            json = Scramble(json);
             File.WriteAllText(Application.persistentDataPath + "/name_data.json", json);
+        }
+
+        public void PreSave()
+        {
+            this.subjectivePros.Sort();
+            this.subjectiveCons.Sort();
         }
 
         public static string EncodeTo64(string toEncode)
@@ -188,7 +293,7 @@ namespace PofyTools.NameGenerator
         public List<GrammarRule> concatenateRules = new List<GrammarRule>();
         public List<GrammarRule> genderConversionRules = new List<GrammarRule>();
 
-        public List<string> subjects = new List<string>();
+        public List<string> subjectives = new List<string>();
     }
 
     [System.Serializable]
@@ -212,9 +317,11 @@ namespace PofyTools.NameGenerator
     public class TitleSet
     {
         public string id;
+        public string opposingId;
 
-        public List<string> adjective = new List<string>();
-        public List<string> objective = new List<string>();
-        public List<string> genetive = new List<string>();
+        public List<string> adjectives = new List<string>();
+        public List<string> objectives = new List<string>();
+        public List<string> genetives = new List<string>();
+        public List<string> subjectives = new List<string>();
     }
 }

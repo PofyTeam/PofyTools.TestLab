@@ -20,7 +20,7 @@ public class NameGeneratorTest : MonoBehaviour
 
     public void Generate()
     {
-        this.label.text = this.data.GenerateName();
+        this.label.text = this.data.GenerateName("angel", "good");
     }
 
     [ContextMenu("Save")]
