@@ -22,6 +22,10 @@ namespace PofyTools.NameGenerator
         public List<string> subjectivePros = new List<string>();
         public List<string> subjectiveCons = new List<string>();
 
+        [Header("Story Mode")]
+        public List<string> subjectiveStory = new List<string>();
+
+        
         #endregion
 
         #region API
@@ -124,6 +128,24 @@ namespace PofyTools.NameGenerator
             return final;
         }
 
+        public string GenerateStoryName(bool useAdjective = true, bool useGenetive = true)
+        {
+            CultureInfo cultureInfo = new CultureInfo("en-US", false);
+            TextInfo textInfo = cultureInfo.TextInfo;
+            string final = "The ";
+            if (useAdjective)
+            {
+                final += "Creepy ";
+            }
+            final += textInfo.ToTitleCase(this.subjectiveStory[Random.Range(0, this.subjectiveStory.Count - 1)].ToLower(cultureInfo));
+            if (useGenetive)
+            {
+                //TODO: pick genetive from other titlesets
+                final += " of the ";
+                final += "Sorrow";
+            }
+            return final;
+        }
 
         #endregion
 
@@ -213,6 +235,7 @@ namespace PofyTools.NameGenerator
 
             this.subjectiveCons.Sort();
             this.subjectivePros.Sort();
+            this.subjectiveStory.Sort();
 
         }
 
@@ -229,6 +252,7 @@ namespace PofyTools.NameGenerator
         {
             this.subjectivePros.Sort();
             this.subjectiveCons.Sort();
+            this.subjectiveStory.Sort();
         }
 
         public static string EncodeTo64(string toEncode)

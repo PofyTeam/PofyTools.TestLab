@@ -10,17 +10,20 @@ public class NameGeneratorTest : MonoBehaviour
     public NameData data;
 
     public Text label;
-    public Button button;
 
     void Awake()
     {
         this.data.Initialize();
-        this.button.onClick.AddListener(this.Generate);
     }
 
     public void Generate()
     {
         this.label.text = this.data.GenerateName("angel", "good");
+    }
+
+    public void GenerateStory()
+    {
+        this.label.text = this.data.GenerateStoryName();
     }
 
     [ContextMenu("Save")]
