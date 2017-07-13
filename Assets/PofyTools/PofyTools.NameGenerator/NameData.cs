@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Globalization;
+using PofyTools.Distribution;
 
 namespace PofyTools.NameGenerator
 {
@@ -24,8 +25,9 @@ namespace PofyTools.NameGenerator
 
         [Header("Story Mode")]
         public List<string> subjectiveStory = new List<string>();
+        [Header("Geolocation")]
+        public List<string> subjectiveGeolocation = new List<string>();
 
-        
         #endregion
 
         #region API
@@ -84,8 +86,8 @@ namespace PofyTools.NameGenerator
 
             if (this._setNames.TryGetValue(nameSetId, out nameSet))
             {
-                final = textInfo.ToTitleCase(nameSet.start[Random.Range(0, nameSet.start.Count - 1)].ToLower(cultureInfo));
-                final += nameSet.end[Random.Range(0, nameSet.end.Count - 1)];
+                final = textInfo.ToTitleCase(nameSet.prefixes[Random.Range(0, nameSet.prefixes.Count - 1)].ToLower(cultureInfo));
+                final += nameSet.sufixes[Random.Range(0, nameSet.sufixes.Count - 1)];
             }
 
             if (this._setTitles.TryGetValue(titleSetId, out titleSet))
@@ -186,20 +188,20 @@ namespace PofyTools.NameGenerator
         {
             foreach (var nameset in this.setNames)
             {
-                for (int i = 0; i < nameset.start.Count; i++)
+                for (int i = 0; i < nameset.prefixes.Count; i++)
                 {
-                    nameset.start[i] = nameset.start[i].ToLower();
+                    nameset.prefixes[i] = nameset.prefixes[i].ToLower();
                 }
 
-                nameset.start.Sort();
+                nameset.prefixes.Sort();
 
 
-                for (int i = 0; i < nameset.end.Count; i++)
+                for (int i = 0; i < nameset.sufixes.Count; i++)
                 {
-                    nameset.end[i] = nameset.end[i].ToLower();
+                    nameset.sufixes[i] = nameset.sufixes[i].ToLower();
                 }
 
-                nameset.end.Sort();
+                nameset.sufixes.Sort();
             }
 
             foreach (var titleset in this.setTitles)
@@ -310,14 +312,171 @@ namespace PofyTools.NameGenerator
     [System.Serializable]
     public class NameSet
     {
+        
         public string id;
-        public List<string> start = new List<string>();
-        public List<string> end = new List<string>();
 
-        public List<GrammarRule> concatenateRules = new List<GrammarRule>();
+        /// <summary>
+        /// The prefixes for pseudo names.
+        /// </summary>
+        public List<string> prefixes = new List<string>();
+        /// <summary>
+        /// The sufixes for pseudo names.
+        /// </summary>
+        public List<string> sufixes = new List<string>();
+
+        /// <summary>
+        /// The concatenation rules for generating pseudo names.
+        /// </summary>
+        public List<GrammarRule> concatenationRules = new List<GrammarRule>();
+
+        /// <summary>
+        /// The gender conversion rules for generating pseudo names.
+        /// </summary>
         public List<GrammarRule> genderConversionRules = new List<GrammarRule>();
 
-        public List<string> subjectives = new List<string>();
+        /// <summary>
+        /// The real male name database.
+        /// </summary>
+        public List<string> namesMale = new List<string>();
+
+        /// <summary>
+        /// The real female name database.
+        /// </summary>
+        public List<string> namesFemale = new List<string>();
+
+        /// <summary>
+        /// Gets eather a random real or pseudo name.
+        /// </summary>
+        /// <returns>The random real or pseudo name.</returns>
+        /// <param name="male">Should random name be male or female name.</param>
+        public string GetRandom(bool male = true)
+        {
+            if (Chance.FiftyFifty)
+                return GenerateRandom(male);    
+            return GetName(male);   
+        }
+
+        /// <summary>
+        /// Gets the real name from name set database.
+        /// </summary>
+        /// <returns>A real name from the database.</returns>
+        /// <param name="male">Should real name be male or female name.</param>
+        public string GetName(bool male = true)
+        {
+            return(male) ? this.namesMale.GetRandom() : this.namesFemale.GetRandom();
+        }
+
+        /// <summary>
+        /// Generates a random pseudo name by concatenating prefix and sufix and by applying grammer rules.
+        /// </summary>
+        /// <returns>A pseudo name.</returns>
+        /// <param name="male">Should pseudo name be male or female name.</param>
+        public string GenerateRandom(bool male = true)
+        {
+            //string result = string.Empty;
+
+            string prefix = this.prefixes.GetRandom();
+            string sufix = this.sufixes.GetRandom();
+
+            char prefixEnd = default(char);
+            char sufixStart = default(char);
+
+            bool dirty = this.concatenationRules.Count > 0;
+            while (dirty)
+            {
+                dirty = false;
+                foreach (var rule in this.concatenationRules)
+                {
+                    prefixEnd = prefix[prefix.Length - 1];
+                    sufixStart = sufix[0];
+
+                    if (rule.left == prefixEnd && rule.right == sufixStart)
+                    {
+                        switch (rule.type)
+                        {
+                            case GrammarRule.Type.RemoveLeft:
+                                prefix = prefix.Remove(prefix.Length - 1, 1);
+                                break;
+                            case GrammarRule.Type.RemoveRight:
+                                sufix = sufix.Remove(0, 1);
+                                break;
+                            case GrammarRule.Type.ReplaceLeft:
+                                prefix = prefix.Remove(prefix.Length - 1);
+                                prefix = prefix.Insert(prefix.Length - 1, rule.addition);
+                                break;
+                            case GrammarRule.Type.ReplaceRight:
+                                sufix = sufix.Remove(0);
+                                sufix = sufix.Insert(0, rule.addition);
+                                break;
+                            case GrammarRule.Type.Insert:
+                                prefix += rule.addition;
+                                break;
+                            case GrammarRule.Type.Append:
+                                sufix += rule.addition;
+                                break;
+                            case GrammarRule.Type.MergeInto:
+                                prefix = prefix.Remove(prefix.Length - 1);
+                                sufix = sufix.Remove(0);
+                                prefix += rule.addition;
+                                break;
+                            default:
+                                break;
+                        }
+                        dirty = true;
+                        break;
+                    }
+                }
+            }
+
+            dirty = !male && this.genderConversionRules.Count > 0;
+            while (dirty)
+            {
+                dirty = false;
+                foreach (var rule in this.genderConversionRules)
+                {
+                    prefixEnd = prefix[prefix.Length - 1];
+                    sufixStart = sufix[0];
+
+                    if (rule.left == prefixEnd && rule.right == sufixStart)
+                    {
+                        switch (rule.type)
+                        {
+                            case GrammarRule.Type.RemoveLeft:
+                                prefix = prefix.Remove(prefix.Length - 1, 1);
+                                break;
+                            case GrammarRule.Type.RemoveRight:
+                                sufix = sufix.Remove(0, 1);
+                                break;
+                            case GrammarRule.Type.ReplaceLeft:
+                                prefix = prefix.Remove(prefix.Length - 1);
+                                prefix = prefix.Insert(prefix.Length - 1, rule.addition);
+                                break;
+                            case GrammarRule.Type.ReplaceRight:
+                                sufix = sufix.Remove(0);
+                                sufix = sufix.Insert(0, rule.addition);
+                                break;
+                            case GrammarRule.Type.Insert:
+                                prefix += rule.addition;
+                                break;
+                            case GrammarRule.Type.Append:
+                                sufix += rule.addition;
+                                break;
+                            case GrammarRule.Type.MergeInto:
+                                prefix = prefix.Remove(prefix.Length - 1);
+                                sufix = sufix.Remove(0);
+                                prefix += rule.addition;
+                                break;
+                            default:
+                                break;
+                        }
+                        dirty = true;
+                        break;
+                    }
+                }
+            }
+
+            return prefix + sufix;
+        }
     }
 
     [System.Serializable]
@@ -327,14 +486,17 @@ namespace PofyTools.NameGenerator
         {
             RemoveLeft,
             RemoveRight,
-            Replace,
+            ReplaceLeft,
+            ReplaceRight,
+            Insert,
             Append,
+            MergeInto,
         }
 
-        public string left;
-        public string right;
+        public char left;
+        public char right;
         public string addition;
-        public Type rule;
+        public Type type;
     }
 
     [System.Serializable]
@@ -344,8 +506,14 @@ namespace PofyTools.NameGenerator
         public string opposingId;
 
         public List<string> adjectives = new List<string>();
-        public List<string> objectives = new List<string>();
+
+        public List<string> objectivePros = new List<string>();
+        public List<string> objectivesNeutral = new List<string>();
+
+        public List<string> subjectivesPros = new List<string>();
+        public List<string> subjectivesCons = new List<string>();
+        public List<string> subjectivesNeutral = new List<string>();
+
         public List<string> genetives = new List<string>();
-        public List<string> subjectives = new List<string>();
     }
 }
