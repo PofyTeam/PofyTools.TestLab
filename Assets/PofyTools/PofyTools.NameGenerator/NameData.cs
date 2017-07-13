@@ -109,12 +109,12 @@ namespace PofyTools.NameGenerator
                         bool opposing = Random.Range(0f, 1f) > 0.5f && this._setTitles.TryGetValue(titleSet.opposingId, out opposingSet);
                         if (opposing)
                         {
-                            final += textInfo.ToTitleCase(opposingSet.objectives[Random.Range(0, opposingSet.objectives.Count - 1)].ToLower(cultureInfo));
+                            final += textInfo.ToTitleCase(opposingSet.objectivesNeutral[Random.Range(0, opposingSet.objectivesNeutral.Count - 1)].ToLower(cultureInfo));
                             final += textInfo.ToTitleCase(this.subjectiveCons[Random.Range(0, this.subjectiveCons.Count - 1)].ToLower(cultureInfo));
                         }
                         else
                         {
-                            final += textInfo.ToTitleCase(titleSet.objectives[Random.Range(0, titleSet.objectives.Count - 1)].ToLower(cultureInfo));
+                            final += textInfo.ToTitleCase(titleSet.objectivesNeutral[Random.Range(0, titleSet.objectivesNeutral.Count - 1)].ToLower(cultureInfo));
                             final += textInfo.ToTitleCase(this.subjectivePros[Random.Range(0, this.subjectivePros.Count - 1)].ToLower(cultureInfo));
                         }
                     }
