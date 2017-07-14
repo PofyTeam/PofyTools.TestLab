@@ -69,7 +69,7 @@ namespace PofyTools.NameGenerator
             }
 
         }
-
+        //FIXME
         public string GenerateName(string nameSetId = "", string titleSetId = "", bool useAdjective = true, bool useSubjective = true, bool useGenetive = true, bool male = true)
         {
 
@@ -129,7 +129,7 @@ namespace PofyTools.NameGenerator
 
             return final;
         }
-
+        //FIXME
         public string GenerateStoryName(bool useAdjective = true, bool useGenetive = true)
         {
             CultureInfo cultureInfo = new CultureInfo("en-US", false);
@@ -148,6 +148,102 @@ namespace PofyTools.NameGenerator
             }
             return final;
         }
+
+        public List<string> vowels = new List<string>();
+        public List<string> vowelPairs = new List<string>();
+
+        public List<string> consonantStart = new List<string>();
+        public List<string> consonantOpen = new List<string>();
+        public List<string> consonantClose = new List<string>();
+
+        public List<string> maleEndSyllablesOpen = new List<string>();
+        public List<string> maleEndSyllablesClose = new List<string>();
+        public List<string> femaleEndSyllablesOpen = new List<string>();
+        public List<string> femaleEndSyllablesClose = new List<string>();
+
+        public string GenerateRandomName(int maxSyllables = 3)
+        {
+//            function getSyllablesStrings(types,length,doLast) {
+//                var syllablesStrings = [];
+//                for(var i=0; i<types.length; i++){
+//                    var string = '';
+//                    if (i == 0){
+//                        if (types[i] && Math.random() > 0.3 && types.length > 1){
+//                            string = getRandomArrayIndex(gameObject.vowelArray);
+//                            syllablesStrings.push(string);
+//                        }else if(types[i]){
+//                            string = getRandomArrayIndex(gameObject.consonantStartArray);
+//                            string += getRandomArrayIndex(gameObject.vowelArray);
+//                            syllablesStrings.push(string);  
+//                        }else{
+//                            if(length[i]>2){
+//                                sting = getRandomArrayIndex(gameObject.consonantOpenArray);
+//                                string += getRandomArrayIndex(gameObject.vowelArray);
+//                                string += getRandomArrayIndex(gameObject.consonantCloseArray);
+//                            }else{
+//                                string = getRandomArrayIndex(gameObject.vowelArray);
+//                                string += getRandomArrayIndex(gameObject.consonantCloseArray);
+//                            }
+//                            syllablesStrings.push(string);
+//                        }
+//                    }else if (i == (types.length-1)){
+//
+//                        if(gameObject.isMale && doLast){
+//                            if(types[i-1]){
+//                                string = getRandomArrayIndex(gameObject.maleEndSyllablesOpen);
+//                            }else{
+//                                string = getRandomArrayIndex(gameObject.maleEndSyllablesClose);
+//                            }
+//                        }else if (!gameObject.isMale && doLast){
+//                            if(types[i-1]){
+//                                string = getRandomArrayIndex(gameObject.femaleEndSyllablesOpen);
+//                            }else{
+//                                string = getRandomArrayIndex(gameObject.femaleEndSyllablesClose);
+//                            }
+//                        }else{
+//                            string = "";
+//                        }
+//                        syllablesStrings.push(string);
+//                    }else {
+//                        if(types[i]){
+//                            string = getRandomArrayIndex(gameObject.consonantOpenArray);
+//                            string += getRandomArrayIndex(gameObject.vowelArray);
+//                        }else{
+//                            if(length[i]>2){
+//                                string = getRandomArrayIndex(gameObject.consonantOpenArray);
+//                                string += getRandomArrayIndex(gameObject.vowelArray);
+//                                string += getRandomArrayIndex(gameObject.consonantCloseArray);
+//                            }else{
+//                                string += getRandomArrayIndex(gameObject.vowelArray);
+//                                string += getRandomArrayIndex(gameObject.consonantCloseArray);
+//                            }
+//                        }
+//                        syllablesStrings.push(string);
+//                    }
+//                }
+//                return syllablesStrings;
+            if (maxSyllables == 0)
+            {
+                return "";
+            }
+
+            string result = string.Empty;
+            int actualSyllableCount = Random.Range(1, maxSyllables + 1);
+            bool[] opens = null;
+            if (actualSyllableCount > 1)
+            {
+                opens = new bool[maxSyllables];
+
+            }
+
+            return result;
+        }
+
+        public static string NameToAdjective(string name)
+        {
+            return name + "\'s";
+        }
+
 
         #endregion
 
@@ -220,19 +316,19 @@ namespace PofyTools.NameGenerator
 
                 titleset.genetives.Sort();
 
-                for (int i = 0; i < titleset.objectives.Count; i++)
+                for (int i = 0; i < titleset.objectivesNeutral.Count; i++)
                 {
-                    titleset.objectives[i] = titleset.objectives[i].ToLower();
+                    titleset.objectivesNeutral[i] = titleset.objectivesNeutral[i].ToLower();
                 }
 
-                titleset.objectives.Sort();
+                titleset.objectivesNeutral.Sort();
 
-                for (int i = 0; i < titleset.subjectives.Count; i++)
+                for (int i = 0; i < titleset.objectivesNeutral.Count; i++)
                 {
-                    titleset.subjectives[i] = titleset.subjectives[i].ToLower();
+                    titleset.objectivesNeutral[i] = titleset.objectivesNeutral[i].ToLower();
                 }
 
-                titleset.subjectives.Sort();
+                titleset.objectivesNeutral.Sort();
             }
 
             this.subjectiveCons.Sort();
@@ -352,7 +448,7 @@ namespace PofyTools.NameGenerator
         public string GetRandom(bool male = true)
         {
             if (Chance.FiftyFifty)
-                return GenerateRandom(male);    
+                return GeneratePseudoName(male);    
             return GetName(male);   
         }
 
@@ -371,7 +467,7 @@ namespace PofyTools.NameGenerator
         /// </summary>
         /// <returns>A pseudo name.</returns>
         /// <param name="male">Should pseudo name be male or female name.</param>
-        public string GenerateRandom(bool male = true)
+        public string GeneratePseudoName(bool male = true)
         {
             //string result = string.Empty;
 
@@ -477,6 +573,11 @@ namespace PofyTools.NameGenerator
 
             return prefix + sufix;
         }
+
+        //TODO:
+        //        public string FeminizeName(string maleName){
+        //
+        //        }
     }
 
     [System.Serializable]
