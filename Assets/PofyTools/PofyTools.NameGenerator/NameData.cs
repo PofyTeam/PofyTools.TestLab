@@ -242,11 +242,11 @@
             int syllableCount = Random.Range(1, maxSyllables + 1);
             Debug.LogError(TAG + syllableCount + " syllables.");
             int[] syllableLengths = GetSyllableLenghts(syllableCount);
-            Debug.LogError(TAG + syllableLengths.ToString() + "their lengths.");
+//            Debug.LogError(TAG + syllableLengths.ToString() + "their lengths.");
             bool[] syllablesTypes = GetSyllableTypes(syllableLengths);
-            Debug.LogError(TAG + syllablesTypes.ToString() + "their opennes.");
+//            Debug.LogError(TAG + syllablesTypes.ToString() + "their opennes.");
             string[] syllablesStrings = GetSyllableStrings(syllablesTypes, syllableLengths, isMale);
-            Debug.LogError(TAG + syllablesStrings.ToString());
+//            Debug.LogError(TAG + syllablesStrings.ToString());
 
             string name = ConcatanateSyllables(syllablesStrings);
             return name;
@@ -259,6 +259,7 @@
             for (int i = 0; i < lenghts.Length; i++)
             {
                 lenghts[i] = Random.Range(2, 4);
+                Debug.LogError(lenghts[i].ToString());
             }
 
             return lenghts;
@@ -278,6 +279,7 @@
                 {
                     syllableTypes[i] = false;
                 }
+                Debug.LogError(syllableTypes[i].ToString());
             }
             return syllableTypes;
         }
@@ -357,6 +359,10 @@
                 syllableStrings[i] = result;
                 continue;
 
+            }
+            foreach (var value in syllableStrings)
+            {
+                Debug.LogError(value);
             }
             return syllableStrings;
         }
@@ -638,6 +644,12 @@
         /// <param name="male">Should random name be male or female name.</param>
         public string GetRandomName(bool male = true)
         {
+            if (this.prefixes.Count + this.sufixes.Count == 0)
+            {
+                Debug.LogError("No prefixes or sufixes in name set " + this.id);
+                return GetName(male);
+            }
+
             if (Chance.FiftyFifty)
                 return GeneratePseudoName(male);    
             return GetName(male);   
@@ -650,7 +662,10 @@
         /// <param name="male">Should real name be male or female name.</param>
         public string GetName(bool male = true)
         {
-            return(male) ? this.namesMale.GetRandom() : this.namesFemale.GetRandom();
+            List<string> list = (male) ? this.namesMale : this.namesFemale;
+            if (list.Count != 0)
+                return list.GetRandom();
+            return "NULL(" + id + ")";
         }
 
         /// <summary>
