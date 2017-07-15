@@ -18,10 +18,10 @@ public class NameGeneratorTest : MonoBehaviour
         this.data.Initialize();
     }
 
-    public void Generate()
-    {
-        this.label.text = this.data.GenerateName("angel", "good");
-    }
+    //    public void Generate()
+    //    {
+    //        this.label.text = this.data.GenerateName("angel", "good");
+    //    }
 
     public void GenerateStory()
     {

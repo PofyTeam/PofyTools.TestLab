@@ -15,12 +15,13 @@
 
         #region Serializable Data
 
+        [Header("Database Version")]
         public string dataVersion = "0.0";
-        public List<NameSet> setNames = new List<NameSet>();
-        public List<TitleSet> setTitles = new List<TitleSet>();
 
-        public List<string> subjectivePros = new List<string>();
-        public List<string> subjectiveCons = new List<string>();
+        [Header("Name Sets")]
+        public List<NameSet> setNames = new List<NameSet>();
+        [Header("Title Sets")]
+        public List<TitleSet> setTitles = new List<TitleSet>();
 
         [Header("Story Mode")]
         public List<string> subjectiveStory = new List<string>();
@@ -42,7 +43,7 @@
 
         #endregion
 
-        #region API
+        #region Runtimes
 
         [System.NonSerialized]
         protected Dictionary<string,NameSet> _setNames = new Dictionary<string, NameSet>();
@@ -70,15 +71,13 @@
             this._setTitles.Clear();
             this._setTitleIds.Clear();
 
-            this._allNouns.AddRange(this.subjectiveCons);
-            this._allNouns.AddRange(this.subjectivePros);
             this._allNouns.AddRange(this.subjectiveGeolocation);
 
             foreach (var nameSet in this.setNames)
             {
                 if (this._setNames.ContainsKey(nameSet.id))
                     Debug.LogWarning(TAG + "Id " + nameSet.id + " already present Name Sets. Owerwritting...");
-                
+
                 this._setNames[nameSet.id] = nameSet;
                 this._setNameIds.Add(nameSet.id);
             }
@@ -87,7 +86,7 @@
             {
                 if (this._setTitles.ContainsKey(titleSet.id))
                     Debug.LogWarning(TAG + "Id " + titleSet.id + " already present in Title Sets. Owerwritting...");
-                
+
                 this._setTitles[titleSet.id] = titleSet;
                 this._setTitleIds.Add(titleSet.id);
 
@@ -100,7 +99,7 @@
                 {
                     this._allNouns.Add(subjective);
                 }
-                    
+
                 foreach (var subjective in titleSet.subjectivesPros)
                 {
                     this._allNouns.Add(subjective);
@@ -115,70 +114,73 @@
                 {
                     this._allNouns.Add(genetive);
                 }
-
             }
-
         }
+
+        #endregion
+
+        #region API
+
         //FIXME
-        public string GenerateName(string nameSetId = "", string titleSetId = "", bool useAdjective = true, bool useSubjective = true, bool useGenetive = true, bool male = true)
-        {
-
-            NameSet nameSet = null;
-            TitleSet titleSet = null;
-            string final = string.Empty;
-            CultureInfo cultureInfo = new CultureInfo("en-US", false);
-            TextInfo textInfo = cultureInfo.TextInfo;
-
-            if (string.IsNullOrEmpty(nameSetId))
-            {
-                nameSetId = this._setNameIds[Random.Range(0, this._setNameIds.Count - 1)];
-            }
-
-            if (this._setNames.TryGetValue(nameSetId, out nameSet))
-            {
-                final = textInfo.ToTitleCase(nameSet.prefixes[Random.Range(0, nameSet.prefixes.Count - 1)].ToLower(cultureInfo));
-                final += nameSet.sufixes[Random.Range(0, nameSet.sufixes.Count - 1)];
-            }
-
-            if (this._setTitles.TryGetValue(titleSetId, out titleSet))
-            {
-                if (useAdjective || useSubjective)
-                {
-                    final += " the ";
-
-                    if (useAdjective)
-                    {
-                        final += textInfo.ToTitleCase(titleSet.adjectives[Random.Range(0, titleSet.adjectives.Count - 1)].ToLower(cultureInfo));
-                        final += " ";
-                    }
-
-                    if (useSubjective)
-                    {
-                        TitleSet opposingSet = null;
-
-                        bool opposing = Random.Range(0f, 1f) > 0.5f && this._setTitles.TryGetValue(titleSet.opposingId, out opposingSet);
-                        if (opposing)
-                        {
-                            final += textInfo.ToTitleCase(opposingSet.objectivesNeutral[Random.Range(0, opposingSet.objectivesNeutral.Count - 1)].ToLower(cultureInfo));
-                            final += textInfo.ToTitleCase(this.subjectiveCons[Random.Range(0, this.subjectiveCons.Count - 1)].ToLower(cultureInfo));
-                        }
-                        else
-                        {
-                            final += textInfo.ToTitleCase(titleSet.objectivesNeutral[Random.Range(0, titleSet.objectivesNeutral.Count - 1)].ToLower(cultureInfo));
-                            final += textInfo.ToTitleCase(this.subjectivePros[Random.Range(0, this.subjectivePros.Count - 1)].ToLower(cultureInfo));
-                        }
-                    }
-                }
-
-                if (useGenetive)
-                    final += " of " + textInfo.ToTitleCase(titleSet.genetives[Random.Range(0, titleSet.genetives.Count - 1)].ToLower(cultureInfo));
-            }
-
-
-            //final = textInfo.ToTitleCase(final);
-
-            return final;
-        }
+        //        public string GenerateName(string nameSetId = "", string titleSetId = "", bool useAdjective = true, bool useSubjective = true, bool useGenetive = true, bool male = true)
+        //        {
+        //
+        //            NameSet nameSet = null;
+        //            TitleSet titleSet = null;
+        //            string final = string.Empty;
+        //            CultureInfo cultureInfo = new CultureInfo("en-US", false);
+        //            TextInfo textInfo = cultureInfo.TextInfo;
+        //
+        //            if (string.IsNullOrEmpty(nameSetId))
+        //            {
+        //                nameSetId = this._setNameIds[Random.Range(0, this._setNameIds.Count - 1)];
+        //            }
+        //
+        //            if (this._setNames.TryGetValue(nameSetId, out nameSet))
+        //            {
+        //                final = textInfo.ToTitleCase(nameSet.prefixes[Random.Range(0, nameSet.prefixes.Count - 1)].ToLower(cultureInfo));
+        //                final += nameSet.sufixes[Random.Range(0, nameSet.sufixes.Count - 1)];
+        //            }
+        //
+        //            if (this._setTitles.TryGetValue(titleSetId, out titleSet))
+        //            {
+        //                if (useAdjective || useSubjective)
+        //                {
+        //                    final += " the ";
+        //
+        //                    if (useAdjective)
+        //                    {
+        //                        final += textInfo.ToTitleCase(titleSet.adjectives[Random.Range(0, titleSet.adjectives.Count - 1)].ToLower(cultureInfo));
+        //                        final += " ";
+        //                    }
+        //
+        //                    if (useSubjective)
+        //                    {
+        //                        TitleSet opposingSet = null;
+        //
+        //                        bool opposing = Random.Range(0f, 1f) > 0.5f && this._setTitles.TryGetValue(titleSet.opposingId, out opposingSet);
+        //                        if (opposing)
+        //                        {
+        //                            final += textInfo.ToTitleCase(opposingSet.objectivesNeutral[Random.Range(0, opposingSet.objectivesNeutral.Count - 1)].ToLower(cultureInfo));
+        //                            final += textInfo.ToTitleCase(this.subjectiveCons[Random.Range(0, this.subjectiveCons.Count - 1)].ToLower(cultureInfo));
+        //                        }
+        //                        else
+        //                        {
+        //                            final += textInfo.ToTitleCase(titleSet.objectivesNeutral[Random.Range(0, titleSet.objectivesNeutral.Count - 1)].ToLower(cultureInfo));
+        //                            final += textInfo.ToTitleCase(this.subjectivePros[Random.Range(0, this.subjectivePros.Count - 1)].ToLower(cultureInfo));
+        //                        }
+        //                    }
+        //                }
+        //
+        //                if (useGenetive)
+        //                    final += " of " + textInfo.ToTitleCase(titleSet.genetives[Random.Range(0, titleSet.genetives.Count - 1)].ToLower(cultureInfo));
+        //            }
+        //
+        //
+        //            //final = textInfo.ToTitleCase(final);
+        //
+        //            return final;
+        //        }
         //TODO
         public string GenerateStoryName(bool useAdjective = true, bool useSubjective = true, bool useGenetive = true)
         {
@@ -193,7 +195,7 @@
                     {
                         string name = GetAnyName(Chance.FiftyFifty);
                         if (!string.IsNullOrEmpty(name))
-                            result += NameToAdjective(GetAnyName(Chance.FiftyFifty)) + " ";
+                            result += NameToAdjective(name) + " ";
                         else
                         {
                             Debug.LogError(TAG + "Empty name from GetAnyName!");
@@ -238,10 +240,13 @@
                 return "[zero syllables]";
             
             int syllableCount = Random.Range(1, maxSyllables + 1);
-
-            int[] syllableLengths = GetSyllableLenghts(syllableCount);          
-            bool[] syllablesTypes = GetSyllableTypes(syllableLengths); 
+            Debug.LogError(TAG + syllableCount + " syllables.");
+            int[] syllableLengths = GetSyllableLenghts(syllableCount);
+            Debug.LogError(TAG + syllableLengths.ToString() + "their lengths.");
+            bool[] syllablesTypes = GetSyllableTypes(syllableLengths);
+            Debug.LogError(TAG + syllablesTypes.ToString() + "their opennes.");
             string[] syllablesStrings = GetSyllableStrings(syllablesTypes, syllableLengths, isMale);
+            Debug.LogError(TAG + syllablesStrings.ToString());
 
             string name = ConcatanateSyllables(syllablesStrings);
             return name;
@@ -467,9 +472,10 @@
                 titleset.objectivesNeutral.Sort();
             }
 
-            this.subjectiveCons.Sort();
-            this.subjectivePros.Sort();
+//            this.subjectiveCons.Sort();
+//            this.subjectivePros.Sort();
             this.subjectiveStory.Sort();
+            this.subjectiveGeolocation.Sort();
 
         }
 
@@ -484,9 +490,40 @@
 
         public void PreSave()
         {
-            this.subjectivePros.Sort();
-            this.subjectiveCons.Sort();
-            this.subjectiveStory.Sort();
+            Optimize(this.subjectiveStory);
+            Optimize(this.subjectiveGeolocation);
+
+            Optimize(this.vowels);
+            Optimize(this.vowelPairs);
+
+            Optimize(this.consonantStart);
+            Optimize(this.consonantOpen);
+            Optimize(this.consonantClose);
+
+            Optimize(this.maleEndSyllablesOpen);
+            Optimize(this.maleEndSyllablesClose);
+            Optimize(this.femaleEndSyllablesOpen);
+            Optimize(this.femaleEndSyllablesClose);
+
+            foreach (var nameset in this.setNames)
+            {
+                Optimize(nameset.prefixes);
+                Optimize(nameset.sufixes);
+                Optimize(nameset.namesMale);
+                Optimize(nameset.namesFemale);
+            }
+
+            foreach (var titleset in this.setTitles)
+            {
+                Optimize(titleset.adjectives);
+                Optimize(titleset.genetives);
+                Optimize(titleset.objectivePros);
+                Optimize(titleset.objectivesNeutral);
+                Optimize(titleset.subjectivesCons);
+                Optimize(titleset.subjectivesNeutral);
+                Optimize(titleset.subjectivesPros);
+            }
+
         }
 
         public static string EncodeTo64(string toEncode)
@@ -537,9 +574,27 @@
             return toUnscramble.ToString();
         }
 
+        public static List<string> Optimize(List<string>toOptimize)
+        {
+            toOptimize.Sort();
+            for (int i = toOptimize.Count - 1; i >= 0; --i)
+            {
+                toOptimize[i] = toOptimize[i].ToLower();
+                if (i < toOptimize.Count - 1)
+                {
+                    var left = toOptimize[i];
+                    var right = toOptimize[i + 1];
+                    if (left == right)
+                    {
+                        toOptimize.RemoveAt(i);
+                    }
+                }
+            }
+            return toOptimize;
+        }
+
         #endregion
     }
-
 
     [System.Serializable]
     public class NameSet
