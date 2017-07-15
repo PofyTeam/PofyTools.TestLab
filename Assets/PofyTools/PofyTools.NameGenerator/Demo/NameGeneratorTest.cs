@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using PofyTools.NameGenerator;
 using UnityEngine.UI;
+using PofyTools;
+using PofyTools.Distribution;
 
 public class NameGeneratorTest : MonoBehaviour
 {
@@ -23,7 +25,14 @@ public class NameGeneratorTest : MonoBehaviour
 
     public void GenerateStory()
     {
-        this.label.text = this.data.GenerateStoryName();
+        bool useAdjective = Chance.FiftyFifty;
+        bool useGenetive = !useAdjective || Chance.FiftyFifty;
+        this.label.text = this.data.GenerateStoryName(useAdjective, Chance.FiftyFifty, useGenetive).ToTitle();
+    }
+
+    public void GenerateTrueRandom()
+    {
+        this.label.text = this.data.GenerateTrueRandomName().ToTitle();
     }
 
     [ContextMenu("Save")]

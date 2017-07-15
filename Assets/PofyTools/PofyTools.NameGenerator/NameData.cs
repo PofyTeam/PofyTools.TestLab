@@ -1,13 +1,12 @@
-﻿using System.Text;
-using System.Globalization;
-using PofyTools.Distribution;
-
-namespace PofyTools.NameGenerator
+﻿namespace PofyTools.NameGenerator
 {
     using System.Collections;
     using System.Collections.Generic;
     using UnityEngine;
     using System.IO;
+    using System.Text;
+    using System.Globalization;
+    using PofyTools.Distribution;
 
     [System.Serializable]
     public class NameData:IInitializable
@@ -28,6 +27,19 @@ namespace PofyTools.NameGenerator
         [Header("Geolocation")]
         public List<string> subjectiveGeolocation = new List<string>();
 
+        [Header("Syllable Generator")]
+        public List<string> vowels = new List<string>();
+        public List<string> vowelPairs = new List<string>();
+
+        public List<string> consonantStart = new List<string>();
+        public List<string> consonantOpen = new List<string>();
+        public List<string> consonantClose = new List<string>();
+
+        public List<string> maleEndSyllablesOpen = new List<string>();
+        public List<string> maleEndSyllablesClose = new List<string>();
+        public List<string> femaleEndSyllablesOpen = new List<string>();
+        public List<string> femaleEndSyllablesClose = new List<string>();
+
         #endregion
 
         #region API
@@ -42,13 +54,25 @@ namespace PofyTools.NameGenerator
         [System.NonSerialized]
         protected List<string> _setTitleIds = new List<string>();
 
+        [System.NonSerialized]
+        protected List<string> _allAdjectives = new List<string>();
+        [System.NonSerialized]
+        protected List<string> _allNouns = new List<string>();
+
         protected void CreateRuntimeCollections()
         {
+            this._allNouns.Clear();
+            this._allAdjectives.Clear();
+
             this._setNames.Clear();
             this._setNameIds.Clear();
 
             this._setTitles.Clear();
             this._setTitleIds.Clear();
+
+            this._allNouns.AddRange(this.subjectiveCons);
+            this._allNouns.AddRange(this.subjectivePros);
+            this._allNouns.AddRange(this.subjectiveGeolocation);
 
             foreach (var nameSet in this.setNames)
             {
@@ -66,6 +90,32 @@ namespace PofyTools.NameGenerator
                 
                 this._setTitles[titleSet.id] = titleSet;
                 this._setTitleIds.Add(titleSet.id);
+
+                foreach (var adjective in titleSet.adjectives)
+                {
+                    this._allAdjectives.Add(adjective);
+                }
+
+                foreach (var subjective in titleSet.subjectivesCons)
+                {
+                    this._allNouns.Add(subjective);
+                }
+                    
+                foreach (var subjective in titleSet.subjectivesPros)
+                {
+                    this._allNouns.Add(subjective);
+                }
+
+                foreach (var subjective in titleSet.subjectivesNeutral)
+                {
+                    this._allNouns.Add(subjective);
+                }
+
+                foreach (var genetive in titleSet.genetives)
+                {
+                    this._allNouns.Add(genetive);
+                }
+
             }
 
         }
@@ -129,114 +179,50 @@ namespace PofyTools.NameGenerator
 
             return final;
         }
-        //FIXME
-        public string GenerateStoryName(bool useAdjective = true, bool useGenetive = true)
+        //TODO
+        public string GenerateStoryName(bool useAdjective = true, bool useSubjective = true, bool useGenetive = true)
         {
-            CultureInfo cultureInfo = new CultureInfo("en-US", false);
-            TextInfo textInfo = cultureInfo.TextInfo;
-            string final = "The ";
-            if (useAdjective)
+            string result = string.Empty;
+
+            if (useSubjective)
             {
-                final += "Creepy ";
+                result = "the ";
+                if (useAdjective)
+                {
+                    if (Chance.FiftyFifty)
+                    {
+                        string name = GetAnyName(Chance.FiftyFifty);
+                        if (!string.IsNullOrEmpty(name))
+                            result += NameToAdjective(GetAnyName(Chance.FiftyFifty)) + " ";
+                        else
+                        {
+                            Debug.LogError(TAG + "Empty name from GetAnyName!");
+                            result += this._allAdjectives.GetRandom() + " ";
+                        }
+                    }
+                    else
+                        result += this._allAdjectives.GetRandom() + " ";
+                }
+                result += this.subjectiveStory.GetRandom().ToLower();
             }
-            final += textInfo.ToTitleCase(this.subjectiveStory[Random.Range(0, this.subjectiveStory.Count - 1)].ToLower(cultureInfo));
             if (useGenetive)
             {
                 //TODO: pick genetive from other titlesets
-                final += " of the ";
-                final += "Sorrow";
+                result += " of ";
+                result += this._allNouns.GetRandom();
             }
-            return final;
+            return result;
         }
 
-        public List<string> vowels = new List<string>();
-        public List<string> vowelPairs = new List<string>();
-
-        public List<string> consonantStart = new List<string>();
-        public List<string> consonantOpen = new List<string>();
-        public List<string> consonantClose = new List<string>();
-
-        public List<string> maleEndSyllablesOpen = new List<string>();
-        public List<string> maleEndSyllablesClose = new List<string>();
-        public List<string> femaleEndSyllablesOpen = new List<string>();
-        public List<string> femaleEndSyllablesClose = new List<string>();
-
-        public string GenerateRandomName(int maxSyllables = 3)
+        public string GetAnyName(bool isMale)
         {
-//            function getSyllablesStrings(types,length,doLast) {
-//                var syllablesStrings = [];
-//                for(var i=0; i<types.length; i++){
-//                    var string = '';
-//                    if (i == 0){
-//                        if (types[i] && Math.random() > 0.3 && types.length > 1){
-//                            string = getRandomArrayIndex(gameObject.vowelArray);
-//                            syllablesStrings.push(string);
-//                        }else if(types[i]){
-//                            string = getRandomArrayIndex(gameObject.consonantStartArray);
-//                            string += getRandomArrayIndex(gameObject.vowelArray);
-//                            syllablesStrings.push(string);  
-//                        }else{
-//                            if(length[i]>2){
-//                                sting = getRandomArrayIndex(gameObject.consonantOpenArray);
-//                                string += getRandomArrayIndex(gameObject.vowelArray);
-//                                string += getRandomArrayIndex(gameObject.consonantCloseArray);
-//                            }else{
-//                                string = getRandomArrayIndex(gameObject.vowelArray);
-//                                string += getRandomArrayIndex(gameObject.consonantCloseArray);
-//                            }
-//                            syllablesStrings.push(string);
-//                        }
-//                    }else if (i == (types.length-1)){
-//
-//                        if(gameObject.isMale && doLast){
-//                            if(types[i-1]){
-//                                string = getRandomArrayIndex(gameObject.maleEndSyllablesOpen);
-//                            }else{
-//                                string = getRandomArrayIndex(gameObject.maleEndSyllablesClose);
-//                            }
-//                        }else if (!gameObject.isMale && doLast){
-//                            if(types[i-1]){
-//                                string = getRandomArrayIndex(gameObject.femaleEndSyllablesOpen);
-//                            }else{
-//                                string = getRandomArrayIndex(gameObject.femaleEndSyllablesClose);
-//                            }
-//                        }else{
-//                            string = "";
-//                        }
-//                        syllablesStrings.push(string);
-//                    }else {
-//                        if(types[i]){
-//                            string = getRandomArrayIndex(gameObject.consonantOpenArray);
-//                            string += getRandomArrayIndex(gameObject.vowelArray);
-//                        }else{
-//                            if(length[i]>2){
-//                                string = getRandomArrayIndex(gameObject.consonantOpenArray);
-//                                string += getRandomArrayIndex(gameObject.vowelArray);
-//                                string += getRandomArrayIndex(gameObject.consonantCloseArray);
-//                            }else{
-//                                string += getRandomArrayIndex(gameObject.vowelArray);
-//                                string += getRandomArrayIndex(gameObject.consonantCloseArray);
-//                            }
-//                        }
-//                        syllablesStrings.push(string);
-//                    }
-//                }
-//                return syllablesStrings;
-            if (maxSyllables == 0)
+            if (Chance.FiftyFifty)
             {
-                return "";
+                Debug.LogError(TAG + "Getting Name from name data...");
+                return this.setNames.GetRandom().GetRandomName(isMale);
             }
-
-            string result = string.Empty;
-            int actualSyllableCount = Random.Range(1, maxSyllables + 1);
-            bool[] opens = null;
-            if (actualSyllableCount > 1)
-            {
-                opens = new bool[maxSyllables];
-
-            }
-
-            return result;
+            Debug.LogError(TAG + "Generating true random name...");
+            return GenerateTrueRandomName(3, isMale);
         }
 
         public static string NameToAdjective(string name)
@@ -244,6 +230,156 @@ namespace PofyTools.NameGenerator
             return name + "\'s";
         }
 
+        #region Syllable Generator
+
+        public string GenerateTrueRandomName(int maxSyllables = 3, bool isMale = true)
+        {
+            if (maxSyllables == 0)
+                return "[zero syllables]";
+            
+            int syllableCount = Random.Range(1, maxSyllables + 1);
+
+            int[] syllableLengths = GetSyllableLenghts(syllableCount);          
+            bool[] syllablesTypes = GetSyllableTypes(syllableLengths); 
+            string[] syllablesStrings = GetSyllableStrings(syllablesTypes, syllableLengths, isMale);
+
+            string name = ConcatanateSyllables(syllablesStrings);
+            return name;
+        }
+
+        public int[] GetSyllableLenghts(int syllableCount = 1)
+        {
+            int[] lenghts = new int[syllableCount];
+
+            for (int i = 0; i < lenghts.Length; i++)
+            {
+                lenghts[i] = Random.Range(2, 4);
+            }
+
+            return lenghts;
+        }
+
+        public bool[] GetSyllableTypes(int[] syllableLengths)
+        {
+            bool[] syllableTypes = new bool[syllableLengths.Length];
+
+            for (var i = 0; i < syllableLengths.Length; i++)
+            {
+                if (syllableLengths[i] < 3 || Chance.FiftyFifty)
+                {
+                    syllableTypes[i] = true;
+                }
+                else
+                {
+                    syllableTypes[i] = false;
+                }
+            }
+            return syllableTypes;
+        }
+
+        public string[] GetSyllableStrings(bool[] types, int[] lengths, bool isMale = true)
+        {
+            string[] syllableStrings = new string[types.Length];
+
+            for (var i = 0; i < types.Length; i++)
+            {
+                string result = string.Empty;
+
+                //if it's a first syllable
+                if (i == 0)
+                {
+                    //Try for vowel on start
+                    if (types[i])
+                    {
+                        if (types.Length > 1 && Chance.TryWithChance(0.3f))
+                        {
+                            result = this.vowels.GetRandom();
+                            syllableStrings[i] = result;
+                            continue;
+                        }
+                        result = this.consonantStart.GetRandom();
+                        result += this.vowels.GetRandom();
+                        syllableStrings[i] = result;
+                        continue;
+                    }
+
+                    if (lengths[i] > 2)
+                    {
+                        result = this.consonantOpen.GetRandom();
+                        result += this.vowels.GetRandom();
+                        result += this.consonantClose.GetRandom();
+                        syllableStrings[i] = result;
+                        continue;
+                    }
+
+                    result = this.vowels.GetRandom();
+                    result += this.consonantClose.GetRandom();
+                    syllableStrings[i] = result;
+                    continue;
+                }
+                //if it's last
+                else if (i == (types.Length - 1))
+                {
+
+                    if (isMale)
+                        result = (types[i - 1]) ? this.maleEndSyllablesOpen.GetRandom() : this.maleEndSyllablesClose.GetRandom();
+                    else
+                        result = (types[i - 1]) ? this.femaleEndSyllablesOpen.GetRandom() : this.femaleEndSyllablesClose.GetRandom();
+
+                    syllableStrings[i] = result;
+                    continue;
+                }
+                //middle syllables
+                if (types[i])
+                {
+                    result = this.consonantOpen.GetRandom();
+                    result += this.vowels.GetRandom();
+                    syllableStrings[i] = result;
+                    continue;
+                }
+
+                if (lengths[i] > 2)
+                {
+                    result = this.consonantOpen.GetRandom();
+                    result += this.vowels.GetRandom();
+                    result += this.consonantClose.GetRandom();
+                    syllableStrings[i] = result;
+                    continue;
+                }
+
+                result = this.vowels.GetRandom();
+                result += this.consonantClose.GetRandom();
+                syllableStrings[i] = result;
+                continue;
+
+            }
+            return syllableStrings;
+        }
+
+        protected string ConcatanateSyllables(string[] syllables)
+        {
+            string result = string.Empty;
+            string left, right;
+            for (int i = 0; i < syllables.Length; ++i)
+            {
+                
+                if (i > 0)
+                {
+                    left = syllables[i - 1];
+                    right = syllables[i];
+                    if (left[left.Length - 1] == right[0])
+                    {
+                        right.PadRight(1);
+                    }
+                }
+
+                result += syllables[i];
+            }
+
+            return result;
+        }
+
+        #endregion
 
         #endregion
 
@@ -445,7 +581,7 @@ namespace PofyTools.NameGenerator
         /// </summary>
         /// <returns>The random real or pseudo name.</returns>
         /// <param name="male">Should random name be male or female name.</param>
-        public string GetRandom(bool male = true)
+        public string GetRandomName(bool male = true)
         {
             if (Chance.FiftyFifty)
                 return GeneratePseudoName(male);    
@@ -498,22 +634,22 @@ namespace PofyTools.NameGenerator
                                 break;
                             case GrammarRule.Type.ReplaceLeft:
                                 prefix = prefix.Remove(prefix.Length - 1);
-                                prefix = prefix.Insert(prefix.Length - 1, rule.addition);
+                                prefix = prefix.Insert(prefix.Length - 1, rule.affix);
                                 break;
                             case GrammarRule.Type.ReplaceRight:
                                 sufix = sufix.Remove(0);
-                                sufix = sufix.Insert(0, rule.addition);
+                                sufix = sufix.Insert(0, rule.affix);
                                 break;
                             case GrammarRule.Type.Insert:
-                                prefix += rule.addition;
+                                prefix += rule.affix;
                                 break;
                             case GrammarRule.Type.Append:
-                                sufix += rule.addition;
+                                sufix += rule.affix;
                                 break;
                             case GrammarRule.Type.MergeInto:
                                 prefix = prefix.Remove(prefix.Length - 1);
                                 sufix = sufix.Remove(0);
-                                prefix += rule.addition;
+                                prefix += rule.affix;
                                 break;
                             default:
                                 break;
@@ -545,22 +681,22 @@ namespace PofyTools.NameGenerator
                                 break;
                             case GrammarRule.Type.ReplaceLeft:
                                 prefix = prefix.Remove(prefix.Length - 1);
-                                prefix = prefix.Insert(prefix.Length - 1, rule.addition);
+                                prefix = prefix.Insert(prefix.Length - 1, rule.affix);
                                 break;
                             case GrammarRule.Type.ReplaceRight:
                                 sufix = sufix.Remove(0);
-                                sufix = sufix.Insert(0, rule.addition);
+                                sufix = sufix.Insert(0, rule.affix);
                                 break;
                             case GrammarRule.Type.Insert:
-                                prefix += rule.addition;
+                                prefix += rule.affix;
                                 break;
                             case GrammarRule.Type.Append:
-                                sufix += rule.addition;
+                                sufix += rule.affix;
                                 break;
                             case GrammarRule.Type.MergeInto:
                                 prefix = prefix.Remove(prefix.Length - 1);
                                 sufix = sufix.Remove(0);
-                                prefix += rule.addition;
+                                prefix += rule.affix;
                                 break;
                             default:
                                 break;
@@ -596,7 +732,7 @@ namespace PofyTools.NameGenerator
 
         public char left;
         public char right;
-        public string addition;
+        public string affix;
         public Type type;
     }
 
