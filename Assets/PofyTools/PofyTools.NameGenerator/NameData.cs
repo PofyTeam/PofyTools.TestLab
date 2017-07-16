@@ -22,6 +22,8 @@
         public List<NameSet> setNames = new List<NameSet>();
         [Header("Title Sets")]
         public List<TitleSet> setTitles = new List<TitleSet>();
+        [Header("Grammar Sets")]
+        public List<GrammarSet> setGrammars = new List<GrammarSet>();
 
         [Header("Story Mode")]
         public List<string> subjectiveStory = new List<string>();
@@ -41,6 +43,10 @@
         public List<string> femaleEndSyllablesOpen = new List<string>();
         public List<string> femaleEndSyllablesClose = new List<string>();
 
+        [Header("Numbers")]
+        public List<string> numberOrdinals = new List<string>();
+        public List<string> numberCardinals = new List<string>();
+
         #endregion
 
         #region Runtimes
@@ -54,6 +60,11 @@
         protected Dictionary<string,TitleSet> _setTitles = new Dictionary<string, TitleSet>();
         [System.NonSerialized]
         protected List<string> _setTitleIds = new List<string>();
+
+        [System.NonSerialized]
+        protected Dictionary<string,GrammarSet> _setGrammars = new Dictionary<string, GrammarSet>();
+        [System.NonSerialized]
+        protected List<string> _setGrammarIds = new List<string>();
 
         [System.NonSerialized]
         protected List<string> _allAdjectives = new List<string>();
@@ -70,6 +81,9 @@
 
             this._setTitles.Clear();
             this._setTitleIds.Clear();
+
+            this._setGrammars.Clear();
+            this._setGrammarIds.Clear();
 
             this._allNouns.AddRange(this.subjectiveGeolocation);
 
@@ -114,6 +128,16 @@
                 {
                     this._allNouns.Add(genetive);
                 }
+
+            }
+        
+            foreach (var grammarset in this.setGrammars)
+            {
+                if (this._setGrammars.ContainsKey(grammarset.nounSingular))
+                    Debug.LogWarning(TAG + "Id " + grammarset.nounSingular + " already present in Grammer Sets. Owerwritting...");
+
+                this._setGrammars[grammarset.nounSingular] = grammarset;
+                this._setGrammarIds.Add(grammarset.nounSingular);
             }
         }
 
@@ -182,6 +206,21 @@
         //            return final;
         //        }
         //TODO
+
+        public NameSet GetNameSet(string id)
+        {
+            NameSet nameset = null;
+            this._setNames.TryGetValue(id, out nameset);
+            return nameset;
+        }
+
+        public TitleSet GetTitleSet(string id)
+        {
+            TitleSet titleset = null;
+            this._setTitles.TryGetValue(id, out titleset);
+            return titleset;
+        }
+
         public string GenerateStoryName(bool useAdjective = true, bool useSubjective = true, bool useGenetive = true)
         {
             string result = string.Empty;
@@ -205,14 +244,17 @@
                     else
                         result += this._allAdjectives.GetRandom() + " ";
                 }
-                result += this.subjectiveStory.GetRandom().ToLower();
+                result += this.subjectiveStory.GetRandom();
             }
             if (useGenetive)
             {
                 //TODO: pick genetive from other titlesets
-                result += " of ";
+                result += " of the ";
                 result += this._allNouns.GetRandom();
             }
+            result = result.Trim();
+            if (string.IsNullOrEmpty(result))
+                result = "NULL(story)";
             return result;
         }
 
@@ -242,11 +284,8 @@
             int syllableCount = Random.Range(1, maxSyllables + 1);
             Debug.LogError(TAG + syllableCount + " syllables.");
             int[] syllableLengths = GetSyllableLenghts(syllableCount);
-//            Debug.LogError(TAG + syllableLengths.ToString() + "their lengths.");
             bool[] syllablesTypes = GetSyllableTypes(syllableLengths);
-//            Debug.LogError(TAG + syllablesTypes.ToString() + "their opennes.");
             string[] syllablesStrings = GetSyllableStrings(syllablesTypes, syllableLengths, isMale);
-//            Debug.LogError(TAG + syllablesStrings.ToString());
 
             string name = ConcatanateSyllables(syllablesStrings);
             return name;
@@ -392,6 +431,31 @@
 
         #endregion
 
+        public static string GetOrdinalNumber(int number)
+        {
+            int remainder = number % 10;
+            if (number < 10 || number > 20)
+            {
+                if (remainder == 1)
+                {
+                    return number + "st";
+                }
+                else if (remainder == 2)
+                {
+                    return number + "nd";
+                }
+                else if (remainder == 3)
+                {
+                    return number + "rd";
+                }
+                else
+                {
+                    return number + "th";
+                }
+            }
+            return number + "th";
+        }
+
         #endregion
 
         #region Initialize
@@ -511,6 +575,7 @@
             Optimize(this.femaleEndSyllablesOpen);
             Optimize(this.femaleEndSyllablesClose);
 
+            this.setNames.Sort((x, y) => x.id.CompareTo(y.id));
             foreach (var nameset in this.setNames)
             {
                 Optimize(nameset.prefixes);
@@ -519,6 +584,7 @@
                 Optimize(nameset.namesFemale);
             }
 
+            this.setTitles.Sort((x, y) => x.id.CompareTo(y.id));
             foreach (var titleset in this.setTitles)
             {
                 Optimize(titleset.adjectives);
@@ -528,8 +594,17 @@
                 Optimize(titleset.subjectivesCons);
                 Optimize(titleset.subjectivesNeutral);
                 Optimize(titleset.subjectivesPros);
+
             }
 
+            this.setGrammars.Sort((x, y) => x.nounSingular.CompareTo(y.nounSingular));
+            foreach (var grammarset in this.setGrammars)
+            {
+                OptimizeString(grammarset.nounSingular);
+
+                Optimize(grammarset.nounPlurals);
+                Optimize(grammarset.adjectives);
+            }
         }
 
         public static string EncodeTo64(string toEncode)
@@ -585,7 +660,7 @@
             toOptimize.Sort();
             for (int i = toOptimize.Count - 1; i >= 0; --i)
             {
-                toOptimize[i] = toOptimize[i].ToLower();
+                toOptimize[i] = toOptimize[i].Trim().ToLower();
                 if (i < toOptimize.Count - 1)
                 {
                     var left = toOptimize[i];
@@ -597,6 +672,11 @@
                 }
             }
             return toOptimize;
+        }
+
+        public static string OptimizeString(string toOptimize)
+        {
+            return toOptimize.Trim().ToLower();
         }
 
         #endregion
@@ -650,7 +730,7 @@
                 return GetName(male);
             }
 
-            if (Chance.FiftyFifty)
+            if ((this.namesMale.Count + this.namesFemale.Count == 0) || Chance.FiftyFifty)
                 return GeneratePseudoName(male);    
             return GetName(male);   
         }
@@ -787,6 +867,34 @@
     }
 
     [System.Serializable]
+    public class TitleSet
+    {
+        public string id;
+        public string opposingId;
+
+        public List<string> adjectives = new List<string>();
+
+        public List<string> objectivePros = new List<string>();
+        public List<string> objectivesNeutral = new List<string>();
+
+        public List<string> subjectivesPros = new List<string>();
+        public List<string> subjectivesCons = new List<string>();
+        public List<string> subjectivesNeutral = new List<string>();
+
+        public List<string> genetives = new List<string>();
+    }
+
+    [System.Serializable]
+    public class GrammarSet
+    {
+        //also used as id
+        public string nounSingular;
+        public bool useDeterminer = true;
+        public List<string> nounPlurals;
+        public List<string> adjectives;
+    }
+
+    [System.Serializable]
     public class GrammarRule
     {
         public enum Type:int
@@ -804,23 +912,5 @@
         public char right;
         public string affix;
         public Type type;
-    }
-
-    [System.Serializable]
-    public class TitleSet
-    {
-        public string id;
-        public string opposingId;
-
-        public List<string> adjectives = new List<string>();
-
-        public List<string> objectivePros = new List<string>();
-        public List<string> objectivesNeutral = new List<string>();
-
-        public List<string> subjectivesPros = new List<string>();
-        public List<string> subjectivesCons = new List<string>();
-        public List<string> subjectivesNeutral = new List<string>();
-
-        public List<string> genetives = new List<string>();
     }
 }

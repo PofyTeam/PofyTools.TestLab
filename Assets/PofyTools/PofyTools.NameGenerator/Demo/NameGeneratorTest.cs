@@ -26,8 +26,15 @@ public class NameGeneratorTest : MonoBehaviour
     public void GenerateStory()
     {
         bool useAdjective = Chance.FiftyFifty;
-        bool useGenetive = !useAdjective || Chance.FiftyFifty;
-        this.label.text = this.data.GenerateStoryName(useAdjective, Chance.FiftyFifty, useGenetive).ToTitle();
+//        Debug.LogError("useAdjective " + useAdjective);
+        bool useSubjective = Chance.FiftyFifty;
+//        Debug.LogError("useSubjective " + useSubjective);
+        bool useGenetive = !useSubjective || Chance.FiftyFifty;
+//        Debug.LogError("useGenetive " + useGenetive);
+        string story = this.data.GenerateStoryName(true, true, true);
+//        Debug.LogError(story);
+        this.label.text = story.ToTitle();
+
     }
 
     public void GenerateTrueRandom()
