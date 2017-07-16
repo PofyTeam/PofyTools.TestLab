@@ -27,11 +27,11 @@ public class NameGeneratorTest : MonoBehaviour
     {
         bool useAdjective = Chance.FiftyFifty;
 //        Debug.LogError("useAdjective " + useAdjective);
-        bool useSubjective = Chance.FiftyFifty;
+        bool useSubjective = true;
 //        Debug.LogError("useSubjective " + useSubjective);
-        bool useGenetive = !useSubjective || Chance.FiftyFifty;
+        bool useGenetive = Chance.FiftyFifty;
 //        Debug.LogError("useGenetive " + useGenetive);
-        string story = this.data.GenerateStoryName(true, true, true);
+        string story = this.data.GenerateStoryName(useAdjective, useSubjective, useGenetive);
 //        Debug.LogError(story);
         this.label.text = story.ToTitle();
 

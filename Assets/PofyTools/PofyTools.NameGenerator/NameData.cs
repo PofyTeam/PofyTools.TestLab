@@ -230,31 +230,91 @@
                 result = "the ";
                 if (useAdjective)
                 {
-                    if (Chance.FiftyFifty)
-                    {
-                        string name = GetAnyName(Chance.FiftyFifty);
-                        if (!string.IsNullOrEmpty(name))
-                            result += NameToAdjective(name) + " ";
-                        else
-                        {
-                            Debug.LogError(TAG + "Empty name from GetAnyName!");
-                            result += this._allAdjectives.GetRandom() + " ";
-                        }
-                    }
-                    else
-                        result += this._allAdjectives.GetRandom() + " ";
+                    result += GetAdjective();
                 }
+
                 result += this.subjectiveStory.GetRandom();
             }
             if (useGenetive)
             {
                 //TODO: pick genetive from other titlesets
-                result += " of the ";
-                result += this._allNouns.GetRandom();
+//                result += " of the ";
+//                result += this._allNouns.GetRandom();
+                result += " " + GetGenetive();
             }
             result = result.Trim();
             if (string.IsNullOrEmpty(result))
                 result = "NULL(story)";
+            return result;
+        }
+
+        public string GetGenetive()
+        {
+            GrammarSet grammarset = null;
+            string result = "of ";
+            string genetive = string.Empty;
+            bool plural = Chance.FiftyFifty;
+
+            bool useAdjective = Chance.TryWithChance(0.3f);
+
+            if (!plural)
+            {
+
+                grammarset = this.setGrammars.GetRandom();
+                if (grammarset.useDeterminer || useAdjective)
+                {
+                    result += "the ";
+                    genetive = grammarset.nounSingular;
+                }
+
+                grammarset = this.setGrammars.GetRandom();
+                result += (Chance.FiftyFifty) ? this.numberOrdinals.GetRandom() + " " : "";
+                if (useAdjective)
+                    result += grammarset.adjectives.GetRandom() + " ";
+                result += genetive;
+            }
+            else
+            {
+                result += (Chance.FiftyFifty) ? this.numberCardinals.GetRandom() + " " : "";
+                grammarset = this.setGrammars.GetRandom();
+                while (grammarset.nounPlurals.Count == 0)
+                {
+                    grammarset = this.setGrammars.GetRandom();
+                }
+
+                genetive = grammarset.nounPlurals.GetRandom();
+                if (useAdjective)
+                {
+                    grammarset = this.setGrammars.GetRandom();
+                    result += grammarset.adjectives.GetRandom() + " ";
+                }
+                result += genetive;
+            }
+            return result;
+        }
+
+        public string GetRandomOrdinalNumber(int max = 1000)
+        {
+            return (Chance.TryWithChance(0.3f)) ? GetOrdinalNumber(Random.Range(4, max + 1)) : this.numberOrdinals.GetRandom();
+        }
+
+        public string GetAdjective()
+        {
+            string result = string.Empty;
+            if (Chance.FiftyFifty)
+            {
+                string name = GetAnyName(Chance.FiftyFifty);
+                if (!string.IsNullOrEmpty(name))
+                    result += NameToAdjective(name) + " ";
+                else
+                {
+                    Debug.LogError(TAG + "Empty name from GetAnyName!");
+                    result += this._allAdjectives.GetRandom() + " ";
+                }
+            }
+            else
+                result += this._allAdjectives.GetRandom() + " ";
+
             return result;
         }
 
