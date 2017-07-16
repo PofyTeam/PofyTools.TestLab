@@ -42,6 +42,11 @@ public class NameGeneratorTest : MonoBehaviour
         this.label.text = this.data.GenerateTrueRandomName().ToTitle();
     }
 
+    public void GetAnyName()
+    {
+        this.label.text = this.data.GetAnyName(Chance.FiftyFifty).ToTitle();
+    }
+
     [ContextMenu("Save")]
     public void Save()
     {

@@ -318,7 +318,7 @@
             return result;
         }
 
-        public string GetAnyName(bool isMale)
+        public string GetAnyName(bool isMale = true)
         {
             if (Chance.FiftyFifty)
             {
