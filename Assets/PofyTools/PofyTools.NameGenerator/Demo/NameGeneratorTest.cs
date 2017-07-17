@@ -47,6 +47,11 @@ public class NameGeneratorTest : MonoBehaviour
         this.label.text = this.data.GetAnyName(Chance.FiftyFifty).ToTitle();
     }
 
+    public void GetAnySerbianName()
+    {
+        this.label.text = this.data.GetNameSet("serbian").GeneratePseudoName(Chance.FiftyFifty).ToTitle();
+    }
+
     [ContextMenu("Save")]
     public void Save()
     {
