@@ -230,7 +230,7 @@
                 result = "the ";
                 if (useAdjective)
                 {
-                    result += GetAdjective();
+                    result += GetAdjective() + " ";
                 }
 
                 result += this.subjectiveStory.GetRandom();
@@ -298,22 +298,36 @@
             return (Chance.TryWithChance(0.3f)) ? GetOrdinalNumber(Random.Range(4, max + 1)) : this.numberOrdinals.GetRandom();
         }
 
-        public string GetAdjective()
+        public string GetAdjective(bool plural = false)
         {
             string result = string.Empty;
+            if (Chance.TryWithChance(0.3f))
+            {
+                if (plural)
+                    result += this.numberCardinals.GetRandom();
+                else
+                    result += this.numberOrdinals.GetRandom();
+                return result;
+            }
+
             if (Chance.FiftyFifty)
             {
                 string name = GetAnyName(Chance.FiftyFifty);
                 if (!string.IsNullOrEmpty(name))
-                    result += NameToAdjective(name) + " ";
+                    result += NameToAdjective(name);
                 else
                 {
                     Debug.LogError(TAG + "Empty name from GetAnyName!");
-                    result += this._allAdjectives.GetRandom() + " ";
+                    result += this._allAdjectives.GetRandom();
                 }
             }
             else
-                result += this._allAdjectives.GetRandom() + " ";
+            {
+                if (Chance.FiftyFifty)
+                    result += this._allAdjectives.GetRandom();
+                else
+                    result += this.setGrammars.GetRandom().adjectives.GetRandom();
+            }
 
             return result;
         }
@@ -642,6 +656,8 @@
                 Optimize(nameset.sufixes);
                 Optimize(nameset.namesMale);
                 Optimize(nameset.namesFemale);
+
+                nameset.concatenationRules.Sort((x, y) => x.left.CompareTo(y.left));
             }
 
             this.setTitles.Sort((x, y) => x.id.CompareTo(y.id));
@@ -829,6 +845,8 @@
                 dirty = false;
                 foreach (var rule in this.concatenationRules)
                 {
+                    if (prefix.Length == 0 || sufix.Length == 0)
+                        break;
                     prefixEnd = prefix[prefix.Length - 1];
                     sufixStart = sufix[0];
 
@@ -876,6 +894,8 @@
                 dirty = false;
                 foreach (var rule in this.genderConversionRules)
                 {
+                    if (prefix.Length == 0 || sufix.Length == 0)
+                        break;
                     prefixEnd = prefix[prefix.Length - 1];
                     sufixStart = sufix[0];
 

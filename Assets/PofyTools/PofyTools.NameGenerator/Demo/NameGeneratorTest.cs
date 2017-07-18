@@ -25,11 +25,11 @@ public class NameGeneratorTest : MonoBehaviour
 
     public void GenerateStory()
     {
-        bool useAdjective = Chance.FiftyFifty;
+        bool useAdjective = true;
 //        Debug.LogError("useAdjective " + useAdjective);
         bool useSubjective = true;
 //        Debug.LogError("useSubjective " + useSubjective);
-        bool useGenetive = Chance.FiftyFifty;
+        bool useGenetive = true;
 //        Debug.LogError("useGenetive " + useGenetive);
         string story = this.data.GenerateStoryName(useAdjective, useSubjective, useGenetive);
 //        Debug.LogError(story);
@@ -49,7 +49,7 @@ public class NameGeneratorTest : MonoBehaviour
 
     public void GetAnySerbianName()
     {
-        this.label.text = this.data.GetNameSet("serbian").GeneratePseudoName(Chance.FiftyFifty).ToTitle();
+        this.label.text = this.data.GetNameSet("town").GeneratePseudoName().ToTitle();
     }
 
     [ContextMenu("Save")]
