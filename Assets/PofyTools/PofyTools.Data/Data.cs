@@ -5,6 +5,11 @@
     using UnityEngine;
     using System.IO;
 
+    /// <summary>
+    /// Collection of keyable values obtainable via key or index.
+    /// </summary>
+    /// <typeparam name="TKey"> Key Type.</typeparam>
+    /// <typeparam name="TValue">Value Type.</typeparam>
     [System.Serializable]
     public abstract class DataSet<TKey,TValue>:IInitializable
     {
@@ -17,6 +22,11 @@
 
         public virtual bool isInitialized{ get; protected set; }
 
+        /// <summary>
+        /// Gets content's element via key.
+        /// </summary>
+        /// <param name="key">Element's key.</param>
+        /// <returns>Content's element.</returns>
         public TValue GetValue(TKey key)
         {
             TValue result = default(TValue);
@@ -33,11 +43,20 @@
             return result;
         }
 
+        /// <summary>
+        /// Gets random element from content.
+        /// </summary>
+        /// <returns>Random element</returns>
         public TValue GetRandom()
         {
             return this._content.GetRandom();
         }
 
+        /// <summary>
+        /// Gets random element different from the last random pick.
+        /// </summary>
+        /// <param name="lastRandomIndex">Index of previously randomly obtained element.</param>
+        /// <returns>Random element different from last random.</returns>
         public TValue GetNextRandom(ref int lastRandomIndex)
         {
             int newIndex = lastRandomIndex;
@@ -56,17 +75,31 @@
             return this._content[newIndex];
         }
 
+        /// <summary>
+        /// Content's element count.
+        /// </summary>
         public int Count
         {
             get{ return this._content.Count; }
         }
     }
 
+    /// <summary>
+    /// Collection of definitions obtainable via key or index
+    /// </summary>
+    /// <typeparam name="T">Definition Type</typeparam>
     [System.Serializable]
     public class DefinitionSet<T>:DataSet<string,T> where T:Definition
     {
+        /// <summary>
+        /// Definition set file path.
+        /// </summary>
         protected string _path;
 
+        /// <summary>
+        /// Definition Set via file path
+        /// </summary>
+        /// <param name="path">Definition set file path.</param>
         public DefinitionSet(string path)
         {
             this._path = path;
@@ -78,9 +111,13 @@
         {
             if (!this.isInitialized)
             {
+                //Read the list content from file
                 DefinitionSet<T>.LoadDefinitionSet(this);
+
+                //Create set's dictionary same size as list
                 this.content = new Dictionary<string, T>(this._content.Count);
 
+                //Add definitions from list to dicionary
                 foreach (var def in this._content)
                 {
                     if (this.content.ContainsKey(def.id))
@@ -117,6 +154,7 @@
 
         #endregion
     }
+
     //TODO
     //    [System.Serializable]
     //    public class DataSet<T>:IInitializable where T:Data
@@ -203,6 +241,7 @@
     //        #endregion
     //    }
 
+
     public abstract class Definition
     {
         public string id;
@@ -224,7 +263,6 @@
 
     public abstract class Data
     {
-
         public string id;
     }
 
@@ -233,6 +271,8 @@
         T data{ get; }
 
         void AppendData(T data);
+
+        void ReleaseData ();
     }
 
 }
