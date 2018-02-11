@@ -11,34 +11,34 @@
     /// <typeparam name="TKey"> Key Type.</typeparam>
     /// <typeparam name="TValue">Value Type.</typeparam>
     [System.Serializable]
-    public abstract class DataSet<TKey,TValue>:IInitializable
+    public abstract class DataSet<TKey, TValue> : IInitializable
     {
         [SerializeField]
-        protected List<TValue> _content = new List<TValue>();
+        protected List<TValue> _content = new List<TValue> ();
 
-        public Dictionary<TKey,TValue> content = null;
+        public Dictionary<TKey, TValue> content = null;
 
-        public abstract bool Initialize();
+        public abstract bool Initialize ();
 
-        public virtual bool isInitialized{ get; protected set; }
+        public virtual bool isInitialized { get; protected set; }
 
         /// <summary>
         /// Gets content's element via key.
         /// </summary>
         /// <param name="key">Element's key.</param>
         /// <returns>Content's element.</returns>
-        public TValue GetValue(TKey key)
+        public TValue GetValue (TKey key)
         {
-            TValue result = default(TValue);
+            TValue result = default (TValue);
 
             if (!this.isInitialized)
             {
-                Debug.LogWarning("Data Set Not Initialized! " + typeof(TValue).ToString());
+                Debug.LogWarning ("Data Set Not Initialized! " + typeof (TValue).ToString ());
                 return result;
             }
 
-            if (!this.content.TryGetValue(key, out result))
-                Debug.LogWarning("Value Not Found For Key: " + key);
+            if (!this.content.TryGetValue (key, out result))
+                Debug.LogWarning ("Value Not Found For Key: " + key);
 
             return result;
         }
@@ -47,9 +47,9 @@
         /// Gets random element from content.
         /// </summary>
         /// <returns>Random element</returns>
-        public TValue GetRandom()
+        public TValue GetRandom ()
         {
-            return this._content.GetRandom();
+            return this._content.GetRandom ();
         }
 
         /// <summary>
@@ -57,7 +57,7 @@
         /// </summary>
         /// <param name="lastRandomIndex">Index of previously randomly obtained element.</param>
         /// <returns>Random element different from last random.</returns>
-        public TValue GetNextRandom(ref int lastRandomIndex)
+        public TValue GetNextRandom (ref int lastRandomIndex)
         {
             int newIndex = lastRandomIndex;
             int length = this._content.Count;
@@ -66,7 +66,7 @@
             {
                 while (lastRandomIndex == newIndex)
                 {
-                    newIndex = Random.Range(0, length);
+                    newIndex = Random.Range (0, length);
                 }
             }
 
@@ -80,7 +80,17 @@
         /// </summary>
         public int Count
         {
-            get{ return this._content.Count; }
+            get { return this._content.Count; }
+        }
+
+        public void SetContent (List<TValue> content)
+        {
+            this._content = content;
+        }
+
+        public List<TValue> GetContent ()
+        {
+            return this._content;
         }
     }
 
@@ -89,7 +99,7 @@
     /// </summary>
     /// <typeparam name="T">Definition Type</typeparam>
     [System.Serializable]
-    public class DefinitionSet<T>:DataSet<string,T> where T:Definition
+    public class DefinitionSet<T> : DataSet<string, T> where T : Definition
     {
         /// <summary>
         /// Definition set file path.
@@ -100,28 +110,28 @@
         /// Definition Set via file path
         /// </summary>
         /// <param name="path">Definition set file path.</param>
-        public DefinitionSet(string path)
+        public DefinitionSet (string path)
         {
             this._path = path;
         }
 
         #region IInitializable implementation
 
-        public override bool Initialize()
+        public override bool Initialize ()
         {
             if (!this.isInitialized)
             {
                 //Read the list content from file
-                DefinitionSet<T>.LoadDefinitionSet(this);
+                DefinitionSet<T>.LoadDefinitionSet (this);
 
                 //Create set's dictionary same size as list
-                this.content = new Dictionary<string, T>(this._content.Count);
+                this.content = new Dictionary<string, T> (this._content.Count);
 
                 //Add definitions from list to dicionary
                 foreach (var def in this._content)
                 {
-                    if (this.content.ContainsKey(def.id))
-                        Debug.LogWarning("Key " + def.id + " present in the set. Overwriting...");
+                    if (this.content.ContainsKey (def.id))
+                        Debug.LogWarning ("Key " + def.id + " present in the set. Overwriting...");
                     this.content[def.id] = def;
                 }
 
@@ -133,23 +143,46 @@
 
         #endregion
 
+        #region Instance Methods
+        public void Save ()
+        {
+            SaveDefinitionSet (this);
+        }
+        #endregion
+
         #region IO
 
-        public static void LoadDefinitionSet(DefinitionSet<T> definitionSet)
+        public static void LoadDefinitionSet (DefinitionSet<T> definitionSet)
         {
-            string fullPath = Application.dataPath + definitionSet._path; 
-            if (!File.Exists(fullPath))
+            string fullPath = Application.dataPath + definitionSet._path;
+            if (!File.Exists (fullPath))
             {
                 //SaveData();
                 return;
             }
 
-            var json = File.ReadAllText(fullPath);
+            var json = File.ReadAllText (fullPath);
             //            json = UnScramble(json);
             //            json = DecodeFrom64(json);
-            JsonUtility.FromJsonOverwrite(json, definitionSet);
+            JsonUtility.FromJsonOverwrite (json, definitionSet);
 
             //            _data.PostLoad();
+        }
+
+        public static void SaveDefinitionSet (DefinitionSet<T> definitionSet)
+        {
+            if (definitionSet != null)
+            {
+                string fullPath = Application.dataPath + definitionSet._path;
+
+                var json = JsonUtility.ToJson (definitionSet, false);
+
+                File.WriteAllText (fullPath, json);
+            }
+            else
+            {
+                Debug.LogError ("Saving Failed! Definitions Set is null.");
+            }
         }
 
         #endregion
@@ -241,24 +274,23 @@
     //        #endregion
     //    }
 
-
     public abstract class Definition
     {
         public string id;
     }
 
-    public interface IDefinable<T> where T:Definition
+    public interface IDefinable<T> where T : Definition
     {
         T definition
         {
             get;
         }
 
-        bool isDefined{ get; }
+        bool isDefined { get; }
 
-        void Define(T definition);
+        void Define (T definition);
 
-        void Undefine();
+        void Undefine ();
     }
 
     public abstract class Data
@@ -266,11 +298,11 @@
         public string id;
     }
 
-    public interface IDatable<T>where T:Data
+    public interface IDatable<T> where T : Data
     {
-        T data{ get; }
+        T data { get; }
 
-        void AppendData(T data);
+        void AppendData (T data);
 
         void ReleaseData ();
     }

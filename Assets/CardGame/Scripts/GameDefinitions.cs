@@ -14,14 +14,15 @@
         public const string DEFINITIONS_PATH = "/definitions";
         public const string LOCATIONS_PATH = "/locations.json";
         public const string ENCOUNTERS_PATH = "/encounters.json";
+        public const string CATEGORIES_PATH = "/categories.json";
 
         #endregion
 
         public const string TAG = "<color=red><b>GameDefinitions: </b></color>";
 
-        public DefinitionSet<LocationCardDefinition> locations = new DefinitionSet<LocationCardDefinition> (DEFINITIONS_PATH + LOCATIONS_PATH);
-
-        public DefinitionSet<EncounterCardDefinition> encounters = new DefinitionSet<EncounterCardDefinition> (DEFINITIONS_PATH + ENCOUNTERS_PATH);
+        public static DefinitionSet<LocationCardDefinition> Locations = new DefinitionSet<LocationCardDefinition> (GameDefinitions.DEFINITIONS_PATH + GameDefinitions.LOCATIONS_PATH);
+        public static DefinitionSet<EncounterCardDefinition> Encounters = new DefinitionSet<EncounterCardDefinition> (GameDefinitions.DEFINITIONS_PATH + GameDefinitions.ENCOUNTERS_PATH);
+        public static DefinitionSet<CategoryDefinition> Categories = new DefinitionSet<CategoryDefinition> (GameDefinitions.DEFINITIONS_PATH + GameDefinitions.CATEGORIES_PATH);
 
         #region Singleton
 
@@ -39,6 +40,10 @@
         {
             if (_instance == null)
             {
+                Categories.Initialize ();
+                Encounters.Initialize ();
+                Categories.Initialize ();
+
                 _instance = new GameDefinitions ();
                 _instance.Initialize ();
             }
@@ -52,9 +57,6 @@
         {
             if (!this.isInitialized)
             {
-                this.locations.Initialize ();
-                this.encounters.Initialize ();
-
                 Debug.Log (TAG + "Initialized!");
                 this.isInitialized = true;
                 return true;
@@ -72,12 +74,54 @@
     }
 
     #region Definitions
+    [System.Serializable]
+    public class CategoryDefinition : Definition
+    {
+        public string displayName;
+        [TextArea]
+        public string categoryDescription;
+
+        public List<string> baseCategories = new List<string> ();
+
+    }
+
+    public class CategoryData : Data, IDefinable<CategoryDefinition>
+    {
+        #region IDefinable
+        public CategoryDefinition definition
+        {
+            get;
+            protected set;
+        }
+
+        public bool isDefined { get {return this.definition != null; } }
+
+        public void Define (CategoryDefinition definition)
+        {
+            this.definition = definition;
+        }
+
+        public void Undefine ()
+        {
+            this.definition = null;
+        }
+        #endregion
+
+        #region Runtime Data
+        
+
+
+        #endregion
+    }
 
     [System.Serializable]
     public class LocationCardDefinition : Definition
     {
+        [TextArea]
         public string descriptionView;
+        [TextArea]
         public string descriptionLand;
+        [TextArea]
         public string descriptionActivate;
 
         public List<string> encounters = new List<string> ();
@@ -86,7 +130,11 @@
     [System.Serializable]
     public class EncounterCardDefinition : Definition
     {
-        public string displayName, description;
+        public string displayName;
+
+        [TextArea]
+        public string description;
+
         public List<string> categories;
 
         public StatsModifier attackStats, defenceStats;
