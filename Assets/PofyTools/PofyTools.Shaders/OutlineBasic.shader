@@ -42,7 +42,7 @@ Shader "Shader Forge/OutlineBasic" {
                 VertexOutput o = (VertexOutput)0; // initialize all fields to default values
                 float2 normal = normalize(v.normal.xy);
                 //normal = TransformViewToProjection(normal);
-                o.pos = UnityObjectToClipPos(float4(v.vertex.xyz + normalize(normal)*_Outlinewidth,1) );
+                o.pos = UnityObjectToClipPos(v.vertex.xyz + float3(normalize(normal)*_Outlinewidth,1));
                 
                 return o;
             }
