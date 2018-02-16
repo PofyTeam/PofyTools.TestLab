@@ -31,7 +31,7 @@ namespace Guvernal.CardGame
             no336,
             no340;
 
-        public Dictionary<int, List<Sprite>> _sprites = new Dictionary<int, List<Sprite>>();
+        public Dictionary<int, List<Sprite>> _sprites = new Dictionary<int, List<Sprite>> ();
 
         void Initialize ()
         {
@@ -54,7 +54,17 @@ namespace Guvernal.CardGame
         }
 
         #endregion
-        public float groundChance;
+        [Header ("Island Parameters")]
+        public float groundBais;
+
+        public bool usePerlin;
+        public float perlinStrength;
+
+        public bool useCosine;
+        public Image debugImage;
+
+        public bool useTexture;
+        public Texture2D mapTexture;
 
         public Vector2Int boardSize = Vector2Int.one;
         protected BoardField[,] _fields;
@@ -73,15 +83,47 @@ namespace Guvernal.CardGame
         [SerializeField]
         protected List<BoardField> _allFields = new List<BoardField> ();
 
-        [ContextMenu ("Add Field")]
         public void AddField (int x, int y)
         {
             var field = Instantiate<BoardField> (this.fieldPrefab);
-            field.Initialize (this, new Vector2Int (x, y));
-            field.transform.SetParent (this.transform, false);
-            if (Chance.TryWithChance(this.groundChance))
+
+            float chanceX = 0;
+            float chanceY = 0;
+            float perlin = 0;
+            int influencerCount = 0;
+
+            float pixel = 0;
+
+            if (this.useCosine)
             {
-                field.image.sprite = this.sprites.GetRandom ();
+                chanceX = Mathf.Cos (((x - (this.boardSize.x) * 0.5f) / ((this.boardSize.x) * 0.5f)) * Mathf.PI);
+                chanceY = Mathf.Cos (((y - (this.boardSize.y) * 0.5f) / ((this.boardSize.y) * 0.5f)) * Mathf.PI);
+                influencerCount++;
+            }
+
+            if (this.usePerlin)
+            {
+                perlin = this.perlinStrength * (0.5f - Mathf.PerlinNoise (((float)x / this.boardSize.x) * 8, (((float)y / this.boardSize.y)) * 8));
+
+                influencerCount++;
+            }
+
+            if (this.useTexture && this.mapTexture != null)
+            {
+                pixel = this.mapTexture.GetPixelBilinear ((float)x / this.boardSize.x, (float)y / this.boardSize.y).grayscale;
+                Debug.Log ("Pixel: " + pixel);
+                influencerCount++;
+            }
+
+            float chance = Mathf.Clamp01 (((chanceX + chanceY + perlin + pixel) / Mathf.Max (influencerCount, 1)) + this.groundBais);
+
+            field.Initialize (this, new Vector2Int (x, y));
+            field.groundChance = chance;
+            field.transform.SetParent (this.transform, false);
+
+            if (x != 0 && y != 0 && x != this.boardSize.x - 1 && y != this.boardSize.y - 1 && Chance.TryWithChance (chance))
+            {
+                field.image.sprite = this.sprites[0];
                 field.image.color = Color.white;
             }
             else
@@ -96,7 +138,6 @@ namespace Guvernal.CardGame
             field.name = "x: " + x + " - y: " + y;
         }
 
-        [ContextMenu ("PopulateBoard")]
         public void PopulateBoard ()
         {
             this._grid.cellSize = new Vector2Int ((int)this._rectTransform.sizeDelta.x / Mathf.Max (this.boardSize.x, 1), (int)this._rectTransform.sizeDelta.y / Mathf.Max (this.boardSize.y, 1));
@@ -110,36 +151,52 @@ namespace Guvernal.CardGame
                 }
             }
 
-            foreach (var field in this._allFields)
+        }
+
+        public void SetFieldSprite (BoardField field)
+        {
+            if (field.image.sprite == null)
+                return;
+            int score = 0;
+            BoardField north, west, east, south;
+
+            north = field.GetNorthField ();
+            west = field.GetWestField ();
+            east = field.GetEastField ();
+            south = field.GetSouthField ();
+
+            Sprite spriteNorth = null, spriteWest = null, fieldSprite = null;
+
+            if (north == null || north.image.sprite == null)
+                score += 4;
+
+            if (west == null || west.image.sprite == null)
+                score += 16;
+
+            if (east == null || east.image.sprite == null)
+                score += 64;
+
+            if (south == null || south.image.sprite == null)
+                score += 256;
+
+            if (north != null)
+                spriteNorth = north.image.sprite;
+            if (west != null)
+                spriteWest = west.image.sprite;
+
+            if (score == 0)
             {
-                if (field.image.sprite == null)
-                    continue;
-                int score = 0;
-                BoardField north, west, east, south;
-
-                north = field.GetNorthField ();
-                west = field.GetWestField ();
-                east = field.GetEastField ();
-                south = field.GetSouthField ();
-
-                if (north == null || north.image.sprite == null)
-                    score += 4;
-
-                if (west == null || west.image.sprite == null)
-                    score += 16;
-
-                if (east == null || east.image.sprite == null)
-                    score += 64;
-
-                if (south == null || south.image.sprite == null)
-                    score += 256;
-
-                field.image.sprite = this._sprites[score].GetRandom ();
-
-                if(score == 0)
+                fieldSprite = this._sprites[score].GetRandom ();
+            }
+            else
+            {
+                do
                 {
-                   
+                    fieldSprite = this._sprites[score].GetRandom ();
                 }
+                while (fieldSprite == spriteNorth || fieldSprite == spriteWest);
+
+                field.image.sprite = fieldSprite;
             }
         }
 
@@ -157,6 +214,68 @@ namespace Guvernal.CardGame
             ClearBoard ();
             Initialize ();
             PopulateBoard ();
+            DrawDebugImage ();
+            ReskinBoard ();
+        }
+        public Texture2D debugTexture;
+        public void DrawDebugImage ()
+        {
+            //Create NewTexture
+            this.debugTexture = new Texture2D (this.boardSize.x, this.boardSize.y);
+
+
+
+            for (int y = 0; y < this.boardSize.y; ++y)
+            {
+                for (int x = 0; x < this.boardSize.x; ++x)
+                {
+                    var field = this.GetField (x, y);
+                    debugTexture.SetPixel (x, y, new Color (field.groundChance, field.groundChance, field.groundChance, 1f));
+                }
+            }
+
+            //Refresh Texture for displaying
+            this.debugTexture.Apply ();
+            //this.debugTexture = FlipTexture (this.debugTexture);
+
+            //Set Properties
+            this.debugTexture.name = "DebugTexture";
+            this.debugTexture.filterMode = FilterMode.Point;
+            this.debugTexture.wrapMode = TextureWrapMode.Clamp;
+
+            var sprite = Sprite.Create (this.debugTexture, new Rect (0, 0, this.boardSize.x, this.boardSize.y), Vector2.zero, 100);
+            sprite.name = "DebugSprite";
+
+            this.debugImage.sprite = sprite;
+        }
+
+        private Texture2D FlipTexture (Texture2D original)
+        {
+            Texture2D flipped = new Texture2D (original.width, original.height);
+
+            int width = original.width;
+            int height = original.height;
+
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    flipped.SetPixel (x, height - y - 1, original.GetPixel (x, y));
+                }
+            }
+            flipped.Apply ();
+
+            return flipped;
+
+        }
+
+        [ContextMenu ("Reskin Board")]
+        public void ReskinBoard ()
+        {
+            foreach (var field in this._allFields)
+            {
+                SetFieldSprite (field);
+            }
         }
 
         private void Awake ()

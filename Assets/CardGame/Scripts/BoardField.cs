@@ -28,6 +28,8 @@
             get { return this._coordinates; }
         }
 
+        public float groundChance;
+
         #endregion
 
         #region IInitializable
@@ -73,12 +75,12 @@
 
         public BoardField GetNorthField ()
         {
-            return this.board.GetField (this.coordinates.x, this.coordinates.y - 1);
+            return this.board.GetField (this.coordinates.x, this.coordinates.y + 1);
         }
 
         public BoardField GetSouthField ()
         {
-            return this.board.GetField (this.coordinates.x, this.coordinates.y + 1);
+            return this.board.GetField (this.coordinates.x, this.coordinates.y - 1);
         }
 
         public BoardField GetEastField ()

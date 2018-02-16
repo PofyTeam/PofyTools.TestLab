@@ -64,10 +64,11 @@
 
             if (length > 1)
             {
-                while (lastRandomIndex == newIndex)
+                do
                 {
                     newIndex = Random.Range (0, length);
                 }
+                while (lastRandomIndex == newIndex);
             }
 
             lastRandomIndex = newIndex;
