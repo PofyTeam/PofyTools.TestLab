@@ -9,6 +9,7 @@ namespace Guvernal.CardGame
     using UnityEngine.UI;
     using PofyTools;
     using PofyTools.Distribution;
+    using System.IO;
 
     public class Board : MonoBehaviour
     {
@@ -124,13 +125,17 @@ namespace Guvernal.CardGame
 
             if (x != 0 && y != 0 && x != this.boardSize.x - 1 && y != this.boardSize.y - 1 && Chance.TryWithChance (chance))
             {
+                field.type = BoardField.Type.Land;
+
                 field.image.sprite = this.sprites[0];
                 field.image.color = this.groundColor;
+
             }
             else
             {
+                field.type = BoardField.Type.Water;
                 field.image.sprite = null;
-                field.image.color = new Color();
+                field.image.color = new Color ();
             }
 
             this._fields[x, y] = field;
@@ -168,16 +173,16 @@ namespace Guvernal.CardGame
 
             Sprite spriteNorth = null, spriteWest = null, fieldSprite = null;
 
-            if (north == null || north.image.sprite == null)
+            if (north == null || north.type == BoardField.Type.Water)
                 score += 4;
 
-            if (west == null || west.image.sprite == null)
+            if (west == null || west.type == BoardField.Type.Water)
                 score += 16;
 
-            if (east == null || east.image.sprite == null)
+            if (east == null || east.type == BoardField.Type.Water)
                 score += 64;
 
-            if (south == null || south.image.sprite == null)
+            if (south == null || south.type == BoardField.Type.Water)
                 score += 256;
 
             if (north != null)
@@ -250,25 +255,25 @@ namespace Guvernal.CardGame
             this.debugImage.sprite = sprite;
         }
 
-        private Texture2D FlipTexture (Texture2D original)
-        {
-            Texture2D flipped = new Texture2D (original.width, original.height);
+        //private Texture2D FlipTexture (Texture2D original)
+        //{
+        //    Texture2D flipped = new Texture2D (original.width, original.height);
 
-            int width = original.width;
-            int height = original.height;
+        //    int width = original.width;
+        //    int height = original.height;
 
-            for (int x = 0; x < width; x++)
-            {
-                for (int y = 0; y < height; y++)
-                {
-                    flipped.SetPixel (x, height - y - 1, original.GetPixel (x, y));
-                }
-            }
-            flipped.Apply ();
+        //    for (int x = 0; x < width; x++)
+        //    {
+        //        for (int y = 0; y < height; y++)
+        //        {
+        //            flipped.SetPixel (x, height - y - 1, original.GetPixel (x, y));
+        //        }
+        //    }
+        //    flipped.Apply ();
 
-            return flipped;
+        //    return flipped;
 
-        }
+        //}
 
         [ContextMenu ("Reskin Board")]
         public void ReskinBoard ()
@@ -276,6 +281,22 @@ namespace Guvernal.CardGame
             foreach (var field in this._allFields)
             {
                 SetFieldSprite (field);
+            }
+        }
+
+        [ContextMenu ("Save Distribution Map")]
+        public void SaveDistributionMap ()
+        {
+            int count = 0;
+            if (this.debugTexture != null)
+            {
+                while(File.Exists(Application.dataPath + "/map_" + count + ".png"))
+                {
+                    count++;
+                }
+
+                File.WriteAllBytes (Application.dataPath + "/map_" + count + ".png", this.debugTexture.EncodeToPNG ());
+                Debug.Log ("Map saved as: " + "map_" + count + ".png");
             }
         }
 

@@ -8,6 +8,13 @@
 
     public class BoardField : MonoBehaviour, IInitializable//, ISubscribable
     {
+        public enum Type
+        {
+            None = 0,
+            Water = 1,
+            Land = 2,
+        }
+
         #region Components
 
         [SerializeField]
@@ -29,6 +36,12 @@
         }
 
         public float groundChance;
+
+        #endregion
+
+        #region Field
+
+        public Type type = Type.None;
 
         #endregion
 
