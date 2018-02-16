@@ -55,6 +55,7 @@ namespace Guvernal.CardGame
 
         #endregion
         [Header ("Island Parameters")]
+        public Color groundColor;
         public float groundBais;
 
         public bool usePerlin;
@@ -124,12 +125,12 @@ namespace Guvernal.CardGame
             if (x != 0 && y != 0 && x != this.boardSize.x - 1 && y != this.boardSize.y - 1 && Chance.TryWithChance (chance))
             {
                 field.image.sprite = this.sprites[0];
-                field.image.color = Color.white;
+                field.image.color = this.groundColor;
             }
             else
             {
                 field.image.sprite = null;
-                field.image.color = Camera.main.backgroundColor;
+                field.image.color = new Color();
             }
 
             this._fields[x, y] = field;
