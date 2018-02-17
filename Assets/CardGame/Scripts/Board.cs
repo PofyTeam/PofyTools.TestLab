@@ -1,60 +1,128 @@
-﻿using UnityEngine;
-using System.Collections.Generic;
-
-namespace Guvernal.CardGame
+﻿namespace Guvernal.CardGame
 {
     using System.Collections;
-    //using System.Collections.Generic;
-    // using UnityEngine;
+    using UnityEngine;
+    using System.Collections.Generic;
     using UnityEngine.UI;
     using PofyTools;
     using PofyTools.Distribution;
     using System.IO;
 
-    public class Board : MonoBehaviour
+    public class Board : MonoBehaviour, IInitializable, ISubscribable
     {
-        #region Graphics
-        public List<Sprite>
-            all,
-            no4,
-            no16,
-            no20,
-            no64,
-            no68,
-            no80,
-            no84,
-            no256,
-            no260,
-            no272,
-            no276,
-            no320,
-            no324,
-            no336,
-            no340;
+        #region Components
 
-        public Dictionary<int, List<Sprite>> _sprites = new Dictionary<int, List<Sprite>> ();
+        [SerializeField]
+        protected RectTransform _rectTransform;
 
-        void Initialize ()
+        [SerializeField]
+        protected GridLayoutGroup _grid;
+
+        #endregion
+
+        #region Runtimes
+        [Header ("Runtimes")]
+        public Image selector;
+        protected BoardField _currentField;
+        #endregion
+
+        #region IInitializable
+
+        public bool isInitialized { get; protected set; }
+
+        public bool Initialize ()
         {
-            this._sprites[0] = this.all;
-            this._sprites[4] = this.no4;
-            this._sprites[16] = this.no16;
-            this._sprites[20] = this.no20;
-            this._sprites[64] = this.no64;
-            this._sprites[68] = this.no68;
-            this._sprites[80] = this.no80;
-            this._sprites[84] = this.no84;
-            this._sprites[256] = this.no256;
-            this._sprites[260] = this.no260;
-            this._sprites[272] = this.no272;
-            this._sprites[276] = this.no276;
-            this._sprites[320] = this.no320;
-            this._sprites[324] = this.no324;
-            this._sprites[336] = this.no336;
-            this._sprites[340] = this.no340;
+            if (!this.isInitialized)
+            {
+                this._sprites[0] = this.all;
+                this._sprites[4] = this.no4;
+                this._sprites[16] = this.no16;
+                this._sprites[20] = this.no20;
+                this._sprites[64] = this.no64;
+                this._sprites[68] = this.no68;
+                this._sprites[80] = this.no80;
+                this._sprites[84] = this.no84;
+                this._sprites[256] = this.no256;
+                this._sprites[260] = this.no260;
+                this._sprites[272] = this.no272;
+                this._sprites[276] = this.no276;
+                this._sprites[320] = this.no320;
+                this._sprites[324] = this.no324;
+                this._sprites[336] = this.no336;
+                this._sprites[340] = this.no340;
+
+                this.isInitialized = true;
+                return true;
+            }
+            return false;
         }
 
         #endregion
+
+        #region ISubscribable
+
+        public bool isSubscribed { get; protected set; }
+
+        public bool Subscribe ()
+        {
+            if (!this.isSubscribed)
+            {
+                Unsubscribe ();
+
+                requestMove += OnMoveRequest;
+                this.isSubscribed = true;
+                return true;
+            }
+            return false;
+        }
+
+        public bool Unsubscribe ()
+        {
+            if (this.isSubscribed)
+            {
+                requestMove -= OnMoveRequest;
+                this.isSubscribed = false;
+                return true;
+            }
+            return false;
+        }
+
+        #endregion
+
+        #region Listeners
+
+        public void OnMoveRequest (Direction direction)
+        {
+            BoardField nextField = null;
+
+            switch (direction)
+            {
+                case Direction.South:
+                    nextField = this._currentField.GetSouthField ();
+                    break;
+                case Direction.West:
+                    nextField = this._currentField.GetWestField ();
+                    break;
+                case Direction.East:
+                    nextField = this._currentField.GetEastField ();
+                    break;
+                case Direction.North:
+                    nextField = this._currentField.GetNorthField ();
+                    break;
+
+                default:
+                    break;
+            }
+
+            if (nextField != null && nextField.type == BoardField.Type.Land)
+                MoveToField (nextField);
+        }
+
+
+        #endregion
+
+        #region Map Generator
+
         [Header ("Island Parameters")]
         public Color groundColor;
         public float groundBais;
@@ -63,19 +131,12 @@ namespace Guvernal.CardGame
         public float perlinStrength;
 
         public bool useCosine;
-        public Image debugImage;
 
         public bool useTexture;
         public Texture2D mapTexture;
 
         public Vector2Int boardSize = Vector2Int.one;
         protected BoardField[,] _fields;
-        [SerializeField]
-        protected RectTransform _rectTransform;
-
-        [SerializeField]
-        protected GridLayoutGroup _grid;
-
         [SerializeField]
         protected BoardField fieldPrefab;
 
@@ -113,7 +174,7 @@ namespace Guvernal.CardGame
             if (this.useTexture && this.mapTexture != null)
             {
                 pixel = this.mapTexture.GetPixelBilinear ((float)x / this.boardSize.x, (float)y / this.boardSize.y).grayscale;
-                Debug.Log ("Pixel: " + pixel);
+                //Debug.Log ("Pixel: " + pixel);
                 influencerCount++;
             }
 
@@ -224,6 +285,7 @@ namespace Guvernal.CardGame
             ReskinBoard ();
         }
         public Texture2D debugTexture;
+
         public void DrawDebugImage ()
         {
             //Create NewTexture
@@ -290,7 +352,7 @@ namespace Guvernal.CardGame
             int count = 0;
             if (this.debugTexture != null)
             {
-                while(File.Exists(Application.dataPath + "/map_" + count + ".png"))
+                while (File.Exists (Application.dataPath + "/map_" + count + ".png"))
                 {
                     count++;
                 }
@@ -300,10 +362,39 @@ namespace Guvernal.CardGame
             }
         }
 
-        private void Awake ()
-        {
-            RebuildBoard ();
-        }
+        #endregion
+
+        #region Debug
+        [Space]
+        public Image debugImage;
+
+        #endregion
+
+        #region Graphics
+        public List<Sprite>
+            all,
+            no4,
+            no16,
+            no20,
+            no64,
+            no68,
+            no80,
+            no84,
+            no256,
+            no260,
+            no272,
+            no276,
+            no320,
+            no324,
+            no336,
+            no340;
+
+        public Dictionary<int, List<Sprite>> _sprites = new Dictionary<int, List<Sprite>> ();
+
+
+        #endregion
+
+        #region API
 
         /// <summary>
         /// Gets Field at provided coodrinates
@@ -317,95 +408,75 @@ namespace Guvernal.CardGame
             {
                 return null;
             }
+
             return this._fields[x, y];
         }
 
-        #region Mono
-        float _timer = 0f;
-
-        private void Update ()
+        public void MoveToField (BoardField field)
         {
-            this._timer += Time.deltaTime;
-            if (this._timer >= 0.1f)
-            {
-                this._timer = 0f;
-                var random = this._allFields.GetRandom ();
-                random.image.sprite = this.sprites.GetRandom ();
-                random.image.color = Color.white;
+            this._currentField = field;
+            this.selector.rectTransform.SetParent (this._currentField.image.rectTransform, false);
+            this.selector.rectTransform.localPosition = Vector3.zero;
+            this.selector.rectTransform.sizeDelta = this._currentField.image.rectTransform.sizeDelta;
+            //this.selector.rectTransform.anchoredPosition = this._currentField.image.rectTransform.anchoredPosition;
+            Board.onMoveToField (this._currentField);
+            //StartCoroutine (MoveToDestination ());
+        }
 
-            }
+        IEnumerator MoveToDestination ()
+        {
+            this.selector.rectTransform.localPosition = Vector3.Lerp (this.selector.rectTransform.localPosition, Vector3.zero, Time.deltaTime);
+            yield return null;
         }
 
         #endregion
 
+        #region Events
 
-    }
+        public static DirectionDelegate requestMove = DirectionIdle;
+        public static BoardFieldDelegate onMoveToField = FieldIdle;
 
-}
-
-
-//Ovde pisemo vezbice
-public class Box
-{
-    public Vector2 dimension;
-
-    public enum State
-    {
-        Open,
-        Closed,
-        Locked,
-    }
-
-    bool hasContent = false;
-    Color color = Color.green;
-    List<Content> content = new List<Content> ();
-
-    public bool TryAddContentToBox (Content contentToAdd)
-    {
-
-        return false;
-    }
-}
-
-public abstract class Content
-{
-    public Box containingBox;
-    public Vector2 dimension;
-}
-
-public class Notebook : Content
-{
-
-
-
-    public bool IsInsideBox ()
-    {
-        if (this.containingBox == null)
+        public static void DirectionIdle (Direction direction)
         {
-            return false;
+
         }
-        else
+        public static void FieldIdle (BoardField field) { }
+
+        #endregion
+
+        #region Mono
+
+        void Awake ()
         {
-            return true;
+            RebuildBoard ();
         }
 
+        void Start ()
+        {
+            Subscribe ();
+            int lastRandom = -1;
+
+            while (this._currentField == null || this._currentField.type != BoardField.Type.Land)
+            {
+                this._currentField = this._allFields.GetNextRandom (ref lastRandom);
+            }
+
+            MoveToField (this._currentField);
+            ;
+        }
+
+        #endregion
     }
 
+    public delegate void DirectionDelegate (Direction direction);
+    public delegate void BoardFieldDelegate (BoardField field);
 
-}
 
-public class Pen : Content
-{
-
-}
-
-public class Headphones : Content
-{
-
-}
-
-public class Jar
-{
-    bool isClosed = true;
-    bool hasContent;
+    public enum Direction
+    {
+        South = -10,
+        West = -1,
+        East = 1,
+        North = 10,
+    }
 }
