@@ -1,11 +1,9 @@
 ﻿namespace Guvernal.CardGame
 {
-    using System.Collections;
-    using System.Collections.Generic;
-    using UnityEngine;
     using PofyTools;
     using PofyTools.Data;
-    using System.IO;
+    using System.Collections.Generic;
+    using UnityEngine;
 
     public class GameDefinitions : IInitializable
     {

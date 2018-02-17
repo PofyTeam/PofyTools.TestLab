@@ -1,9 +1,9 @@
 ﻿namespace PofyTools.Data
 {
-    using System.Collections;
     using System.Collections.Generic;
-    using UnityEngine;
     using System.IO;
+    using System.Text;
+    using UnityEngine;
 
     /// <summary>
     /// Collection of keyable values obtainable via key or index.
@@ -156,34 +156,13 @@
         public static void LoadDefinitionSet (DefinitionSet<T> definitionSet)
         {
             string fullPath = Application.dataPath + definitionSet._path;
-            if (!File.Exists (fullPath))
-            {
-                //SaveData();
-                return;
-            }
-
-            var json = File.ReadAllText (fullPath);
-            //            json = UnScramble(json);
-            //            json = DecodeFrom64(json);
-            JsonUtility.FromJsonOverwrite (json, definitionSet);
-
-            //            _data.PostLoad();
+            DataUtility.LoadOverwrite (fullPath, definitionSet);
         }
 
         public static void SaveDefinitionSet (DefinitionSet<T> definitionSet)
         {
-            if (definitionSet != null)
-            {
-                string fullPath = Application.dataPath + definitionSet._path;
-
-                var json = JsonUtility.ToJson (definitionSet, false);
-
-                File.WriteAllText (fullPath, json);
-            }
-            else
-            {
-                Debug.LogError ("Saving Failed! Definitions Set is null.");
-            }
+            string fullPath = Application.dataPath + definitionSet._path;
+            DataUtility.Save (fullPath, definitionSet);
         }
 
         #endregion
@@ -307,5 +286,4 @@
 
         void ReleaseData ();
     }
-
 }

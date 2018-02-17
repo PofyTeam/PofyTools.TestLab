@@ -6,7 +6,6 @@
     using UnityEngine.UI;
     using PofyTools;
     using PofyTools.Distribution;
-    using System.IO;
 
     public class Board : MonoBehaviour, IInitializable, ISubscribable
     {
@@ -23,6 +22,7 @@
         #region Runtimes
         [Header ("Runtimes")]
         public Image selector;
+        public Image iconHome;
         protected BoardField _currentField;
         #endregion
 
@@ -69,7 +69,8 @@
             {
                 Unsubscribe ();
 
-                requestMove += OnMoveRequest;
+                Board.requestGameStart += this.OnGameStartRequest;
+                Board.requestMove += this.OnMoveRequest;
                 this.isSubscribed = true;
                 return true;
             }
@@ -80,7 +81,8 @@
         {
             if (this.isSubscribed)
             {
-                requestMove -= OnMoveRequest;
+                Board.requestGameStart -= this.OnGameStartRequest;
+                Board.requestMove -= OnMoveRequest;
                 this.isSubscribed = false;
                 return true;
             }
@@ -114,10 +116,24 @@
                     break;
             }
 
-            if (nextField != null && nextField.type == BoardField.Type.Land)
+            if (nextField != null && (int)nextField.type >= 2)
                 MoveToField (nextField);
         }
 
+        public void OnGameStartRequest ()
+        {
+            int lastRandom = -1;
+            BoardField homeField = null;
+            while (homeField == null || homeField.type != BoardField.Type.Land)
+            {
+                homeField = this._allFields.GetNextRandom (ref lastRandom);
+            }
+
+            MoveToField (homeField);
+            MakeHome (homeField);
+
+            Board.gameStarted ();
+        }
 
         #endregion
 
@@ -125,6 +141,8 @@
 
         [Header ("Island Parameters")]
         public Color groundColor;
+        public Color visitedColor;
+
         public float groundBais;
 
         public bool usePerlin;
@@ -182,7 +200,7 @@
 
             field.Initialize (this, new Vector2Int (x, y));
             field.groundChance = chance;
-            field.transform.SetParent (this.transform, false);
+            field.transform.SetParent (this._rectTransform, false);
 
             if (x != 0 && y != 0 && x != this.boardSize.x - 1 && y != this.boardSize.y - 1 && Chance.TryWithChance (chance))
             {
@@ -270,7 +288,7 @@
         [ContextMenu ("Clear Board")]
         public void ClearBoard ()
         {
-            this.transform.ClearChildren ();
+            this._rectTransform.ClearChildren ();
             this._allFields.Clear ();
 
         }
@@ -349,17 +367,7 @@
         [ContextMenu ("Save Distribution Map")]
         public void SaveDistributionMap ()
         {
-            int count = 0;
-            if (this.debugTexture != null)
-            {
-                while (File.Exists (Application.dataPath + "/map_" + count + ".png"))
-                {
-                    count++;
-                }
-
-                File.WriteAllBytes (Application.dataPath + "/map_" + count + ".png", this.debugTexture.EncodeToPNG ());
-                Debug.Log ("Map saved as: " + "map_" + count + ".png");
-            }
+            DataUtility.IncrementSaveToPNG (Application.dataPath, "map_", this.debugTexture);
         }
 
         #endregion
@@ -415,33 +423,45 @@
         public void MoveToField (BoardField field)
         {
             this._currentField = field;
-            this.selector.rectTransform.SetParent (this._currentField.image.rectTransform, false);
+            this.selector.gameObject.SetActive (true);
+            this.selector.rectTransform.SetParent (field.image.rectTransform, true);
             this.selector.rectTransform.localPosition = Vector3.zero;
-            this.selector.rectTransform.sizeDelta = this._currentField.image.rectTransform.sizeDelta;
-            //this.selector.rectTransform.anchoredPosition = this._currentField.image.rectTransform.anchoredPosition;
-            Board.onMoveToField (this._currentField);
-            //StartCoroutine (MoveToDestination ());
+            //this.selector.rectTransform.SetPositionAndRotation (Vector3.zero, Quaternion.identity);
+            this.selector.rectTransform.sizeDelta = field.image.rectTransform.sizeDelta;
+            this.selector.rectTransform.ForceUpdateRectTransforms ();
+            field.image.color = this.visitedColor;
+            Board.movedToField (field);
+
         }
 
-        IEnumerator MoveToDestination ()
+        public void MakeHome (BoardField field)
         {
-            this.selector.rectTransform.localPosition = Vector3.Lerp (this.selector.rectTransform.localPosition, Vector3.zero, Time.deltaTime);
-            yield return null;
+            if (field.type == BoardField.Type.Land)
+            {
+                field.type = BoardField.Type.Home;
+            }
+            this.iconHome.gameObject.SetActive (true);
+            this.iconHome.rectTransform.SetParent (field.image.rectTransform, true);
+            this.iconHome.rectTransform.localPosition = Vector3.zero;
+            this.iconHome.rectTransform.sizeDelta = field.image.rectTransform.sizeDelta;
+            this.iconHome.rectTransform.ForceUpdateRectTransforms ();
+
+
         }
 
         #endregion
 
         #region Events
 
+        public static VoidDelegate requestGameStart = VoidIdle;
+        public static VoidDelegate gameStarted = VoidIdle;
+
         public static DirectionDelegate requestMove = DirectionIdle;
-        public static BoardFieldDelegate onMoveToField = FieldIdle;
+        public static BoardFieldDelegate movedToField = FieldIdle;
 
-        public static void DirectionIdle (Direction direction)
-        {
-
-        }
+        public static void DirectionIdle (Direction direction) { }
         public static void FieldIdle (BoardField field) { }
-
+        public static void VoidIdle () { }
         #endregion
 
         #region Mono
@@ -454,20 +474,12 @@
         void Start ()
         {
             Subscribe ();
-            int lastRandom = -1;
-
-            while (this._currentField == null || this._currentField.type != BoardField.Type.Land)
-            {
-                this._currentField = this._allFields.GetNextRandom (ref lastRandom);
-            }
-
-            MoveToField (this._currentField);
-            ;
         }
 
         #endregion
     }
 
+    public delegate void VoidDelegate ();
     public delegate void DirectionDelegate (Direction direction);
     public delegate void BoardFieldDelegate (BoardField field);
 

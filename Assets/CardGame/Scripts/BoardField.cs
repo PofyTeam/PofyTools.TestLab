@@ -13,6 +13,7 @@
             None = 0,
             Water = 1,
             Land = 2,
+            Home = 3,
         }
 
         #region Components
