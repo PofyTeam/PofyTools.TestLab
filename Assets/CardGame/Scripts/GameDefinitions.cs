@@ -2,6 +2,8 @@
 {
     using PofyTools;
     using PofyTools.Data;
+    using PofyTools.NameGenerator;
+
     using System.Collections.Generic;
     using UnityEngine;
 
@@ -10,10 +12,11 @@
         #region Game Constants
 
         public const string DEFINITIONS_PATH = "/definitions";
+
         public const string LOCATIONS_PATH = "/locations.json";
         public const string ENCOUNTERS_PATH = "/encounters.json";
         public const string CATEGORIES_PATH = "/categories.json";
-
+        public const string SEMANTICS_PATH = "/semantic_data.json";
         #endregion
 
         public const string TAG = "<color=red><b>GameDefinitions: </b></color>";
@@ -21,6 +24,7 @@
         public static DefinitionSet<LocationCardDefinition> Locations = new DefinitionSet<LocationCardDefinition> (GameDefinitions.DEFINITIONS_PATH + GameDefinitions.LOCATIONS_PATH);
         public static DefinitionSet<EncounterCardDefinition> Encounters = new DefinitionSet<EncounterCardDefinition> (GameDefinitions.DEFINITIONS_PATH + GameDefinitions.ENCOUNTERS_PATH);
         public static DefinitionSet<CategoryDefinition> Categories = new DefinitionSet<CategoryDefinition> (GameDefinitions.DEFINITIONS_PATH + GameDefinitions.CATEGORIES_PATH);
+        public static SemanticData Semantics = new SemanticData (GameDefinitions.DEFINITIONS_PATH + GameDefinitions.SEMANTICS_PATH);
 
         #region Singleton
 
@@ -55,6 +59,11 @@
         {
             if (!this.isInitialized)
             {
+                Locations.Initialize ();
+                Encounters.Initialize ();
+                Categories.Initialize ();
+                Semantics.Initialize ();
+
                 Debug.Log (TAG + "Initialized!");
                 this.isInitialized = true;
                 return true;
@@ -92,7 +101,7 @@
             protected set;
         }
 
-        public bool isDefined { get {return this.definition != null; } }
+        public bool isDefined { get { return this.definition != null; } }
 
         public void Define (CategoryDefinition definition)
         {
@@ -106,7 +115,7 @@
         #endregion
 
         #region Runtime Data
-        
+
 
 
         #endregion
