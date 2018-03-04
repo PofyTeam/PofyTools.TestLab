@@ -143,7 +143,7 @@
         public List<CategoryDefinition> categoryDefs;
         public List<EncounterCardDefinition> encountersDefs;
         public List<LocationCardDefinition> locationsDefs;
-        
+
         public SemanticData semanticData;
 
         [ContextMenu ("Load Definitions")]

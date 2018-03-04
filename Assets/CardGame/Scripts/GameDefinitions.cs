@@ -26,6 +26,8 @@
         public static DefinitionSet<CategoryDefinition> Categories = new DefinitionSet<CategoryDefinition> (GameDefinitions.DEFINITIONS_PATH + GameDefinitions.CATEGORIES_PATH);
         public static SemanticData Semantics = new SemanticData (GameDefinitions.DEFINITIONS_PATH + GameDefinitions.SEMANTICS_PATH);
 
+        public static CategoryDataSet CategoryData = null;
+
         #region Singleton
 
         private static GameDefinitions _instance;
@@ -42,13 +44,29 @@
         {
             if (_instance == null)
             {
-                Categories.Initialize ();
+                Locations.Initialize ();
                 Encounters.Initialize ();
                 Categories.Initialize ();
+                Semantics.Initialize ();
+
+                CategoryData = new CategoryDataSet (Categories);
 
                 _instance = new GameDefinitions ();
                 _instance.Initialize ();
             }
+        }
+
+        public static void ReloadData ()
+        {
+
+            Locations.Reload ();
+            Encounters.Reload ();
+            Categories.Reload ();
+
+            //TODO: Reload Semantics?
+            //Semantics.Load();
+
+            CategoryData = new CategoryDataSet (Categories);
         }
 
         #endregion
@@ -59,10 +77,6 @@
         {
             if (!this.isInitialized)
             {
-                Locations.Initialize ();
-                Encounters.Initialize ();
-                Categories.Initialize ();
-                Semantics.Initialize ();
 
                 Debug.Log (TAG + "Initialized!");
                 this.isInitialized = true;
@@ -84,16 +98,38 @@
     [System.Serializable]
     public class CategoryDefinition : Definition
     {
+        public CategoryDefinition (string key)
+        {
+            this.id = key;
+        }
+
+        [Header ("Display Name")]
         public string displayName;
         [TextArea]
+        [Header ("Category Description")]
         public string categoryDescription;
-
+        [Header ("Base Categories")]
         public List<string> baseCategories = new List<string> ();
-
+        [Header ("NameSet")]
+        public NameSet nameSet;
+        public NameSet influenceSet;
     }
 
     public class CategoryData : Data, IDefinable<CategoryDefinition>
     {
+        public CategoryData (CategoryDefinition definition)
+        {
+            this.Define (definition);
+        }
+
+        #region API
+        public void AddSubcategory (CategoryData data)
+        {
+            this.subcategories.Add (data.id);
+        }
+
+        #endregion
+
         #region IDefinable
         public CategoryDefinition definition
         {
@@ -106,6 +142,7 @@
         public void Define (CategoryDefinition definition)
         {
             this.definition = definition;
+            this.id = definition.id;
         }
 
         public void Undefine ()
@@ -115,10 +152,74 @@
         #endregion
 
         #region Runtime Data
-
-
+        public List<string> subcategories = new List<string> ();
 
         #endregion
+    }
+
+    public class CategoryDataSet : DataSet<string, CategoryData>
+    {
+        public CategoryDataSet (DefinitionSet<CategoryDefinition> categoryDefinitionSet)
+        {
+            Initialize (categoryDefinitionSet.GetContent ());
+        }
+
+        /// <summary>
+        /// Topmost categories.
+        /// </summary>
+        public List<CategoryData> rootCategories = new List<CategoryData> ();
+
+        public bool Initialize (List<CategoryDefinition> categoryDefs)
+        {
+            if (!this.isInitialized)
+            {
+                this.content = new Dictionary<string, CategoryData> (categoryDefs.Count);
+
+                foreach (var category in categoryDefs)
+                {
+                    CategoryData data = new CategoryData (category);
+
+                    //list
+                    this._content.Add (data);
+
+                    //dictionary
+                    this.content[data.id] = data;
+
+                    if (category.baseCategories.Count == 0)
+                    {
+                        this.rootCategories.Add (data);
+                    }
+                }
+
+                Initialize ();
+
+                return true;
+            }
+            return false;
+        }
+
+        public override bool Initialize ()
+        {
+            if (!this.isInitialized)
+            {
+
+                foreach (var data in this._content)
+                {
+                    foreach (var baseCategory in data.definition.baseCategories)
+                    {
+                        CategoryData baseData;
+                        if (this.content.TryGetValue (baseCategory, out baseData))
+                        {
+                            baseData.AddSubcategory (data);
+                        }
+                    }
+                }
+
+                this.isInitialized = true;
+                return true;
+            }
+            return false;
+        }
     }
 
     [System.Serializable]

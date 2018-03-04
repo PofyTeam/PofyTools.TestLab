@@ -11,7 +11,7 @@
     /// <typeparam name="TKey"> Key Type.</typeparam>
     /// <typeparam name="TValue">Value Type.</typeparam>
     [System.Serializable]
-    public abstract class DataSet<TKey, TValue> : IInitializable
+    public abstract class DataSet<TKey, TValue> : IInitializable, IContentProvider<List<TValue>>
     {
         [SerializeField]
         protected List<TValue> _content = new List<TValue> ();
@@ -93,6 +93,11 @@
         {
             return this._content;
         }
+
+        public List<TKey> GetKeys ()
+        {
+            return new List<TKey> (this.content.Keys);
+        }
     }
 
     /// <summary>
@@ -122,20 +127,7 @@
         {
             if (!this.isInitialized)
             {
-                //Read the list content from file
-                DefinitionSet<T>.LoadDefinitionSet (this);
-
-                //Create set's dictionary same size as list
-                this.content = new Dictionary<string, T> (this._content.Count);
-
-                //Add definitions from list to dicionary
-                foreach (var def in this._content)
-                {
-                    if (this.content.ContainsKey (def.id))
-                        Debug.LogWarning ("Key " + def.id + " present in the set. Overwriting...");
-                    this.content[def.id] = def;
-                }
-
+                Load ();
                 this.isInitialized = true;
                 return true;
             }
@@ -148,6 +140,36 @@
         public void Save ()
         {
             SaveDefinitionSet (this);
+        }
+        
+        public void Load ()
+        {
+            //Read the list content from file
+            DefinitionSet<T>.LoadDefinitionSet (this);
+
+            //Create set's dictionary same size as list
+            this.content = new Dictionary<string, T> (this._content.Count);
+
+            //Add definitions from list to dicionary
+            foreach (var def in this._content)
+            {
+                if (this.content.ContainsKey (def.id))
+                    Debug.LogWarning ("Key " + def.id + " present in the set. Overwriting...");
+                this.content[def.id] = def;
+            }
+        }
+
+        public void Reload ()
+        {
+            DefinitionSet<T>.LoadDefinitionSet (this);
+            this.content.Clear ();
+            //Add definitions from list to dicionary
+            foreach (var def in this._content)
+            {
+                if (this.content.ContainsKey (def.id))
+                    Debug.LogWarning ("Key " + def.id + " present in the set. Overwriting...");
+                this.content[def.id] = def;
+            }
         }
         #endregion
 
