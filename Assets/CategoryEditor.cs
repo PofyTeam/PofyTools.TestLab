@@ -14,14 +14,38 @@ public class CategoryEditor : MonoBehaviour, IContentProvider<List<string>>
     [Header ("UI Componenets")]
     public ScrollRect categoryView;
 
-    [Header ("SelectedCategory")]
-    public CanvasGroup definitionCanvasGroup;
-    protected CategoryData _currentCategory;
-    public InputField displayName, categoryDescription;
-    public ScrollRect baseCategories;
-
     [Header ("Game Data")]
     public List<CategoryDefinition> categoryDefs;
+
+    #region Selected Data
+
+    protected CategoryData _currentCategory;
+    protected CategoryDefinition _currentDefinition
+    {
+        get
+        {
+            if (this._currentCategory != null)
+                return this._currentCategory.definition;
+            else
+                return null;
+        }
+    }
+
+    #endregion
+
+    #region Selected Definition View
+
+    [Header ("SelectedCategory")]
+    public CanvasGroup definitionCanvasGroup;
+
+    public InputField displayName, categoryDescription;
+
+    public ScrollRect baseCategories;
+    public ScrollRect subcategories;
+
+    public AutocompleteInputField addBaseCategory;
+
+    #endregion
 
     #region API
     [ContextMenu ("Load Definitions")]
@@ -87,6 +111,14 @@ public class CategoryEditor : MonoBehaviour, IContentProvider<List<string>>
                 Debug.LogWarning ("Category \"" + baseCategory + "\" does not exist.");
         }
 
+        foreach (var subcategory in data.subcategories)
+        {
+            if (GameDefinitions.CategoryData.GetValue (subcategory) != null)
+                AddCategoryPlate (subcategory, CategoryPlate.Type.Subcategory);
+            else
+                Debug.LogWarning ("Category \"" + subcategory + "\" does not exist.");
+        }
+
         this.definitionCanvasGroup.interactable = true;
         this.definitionCanvasGroup.alpha = 1;
     }
@@ -128,7 +160,8 @@ public class CategoryEditor : MonoBehaviour, IContentProvider<List<string>>
                 plate.transform.SetParent (this.categoryView.content, false);
                 break;
             case CategoryPlate.Type.Subcategory:
-                //not yet available.
+                plate.buttonRemoveCategory.interactable = false;
+                plate.transform.SetParent (this.subcategories.content, false);
                 break;
             default:
                 break;
@@ -151,8 +184,6 @@ public class CategoryEditor : MonoBehaviour, IContentProvider<List<string>>
     }
 
     public InputField newCategory;
-
-    public AutocompleteInputField addBaseCategory;
 
     public void AddCategory ()
     {
