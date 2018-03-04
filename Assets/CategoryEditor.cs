@@ -132,6 +132,7 @@ public class CategoryEditor : MonoBehaviour, IContentProvider<List<string>>
         {
             SaveDefinitions ();
             this.baseCategories.content.ClearChildren ();
+            this.subcategories.content.ClearChildren ();
             SelectCategory (categoryKey);
         });
 
@@ -181,6 +182,7 @@ public class CategoryEditor : MonoBehaviour, IContentProvider<List<string>>
     {
         this.categoryView.content.ClearChildren ();
         this.baseCategories.content.ClearChildren ();
+        this.subcategories.content.ClearChildren ();
     }
 
     public InputField newCategory;
@@ -213,6 +215,13 @@ public class CategoryEditor : MonoBehaviour, IContentProvider<List<string>>
         {
             this._currentCategory.definition.displayName = this.displayName.text;
             this._currentCategory.definition.categoryDescription = this.categoryDescription.text;
+        }
+
+        this.categoryDefs.Sort ((x, y) => x.id.CompareTo (y.id));
+
+        foreach (var def in this.categoryDefs)
+        {
+            def.baseCategories.Sort ();
         }
 
         GameDefinitions.Categories.SetContent (this.categoryDefs);
