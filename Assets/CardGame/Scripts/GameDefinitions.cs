@@ -115,6 +115,90 @@
         public NameSet influenceSet;
     }
 
+    [System.Serializable]
+    public class LocationCardDefinition : CardDefinition
+    {
+        [TextArea]
+        public string escriptionPeek;
+        [TextArea]
+        public string descriptionActivate;
+
+        public List<string> encounters = new List<string> ();
+    }
+
+    public enum CardRarity
+    {
+        None = 0,
+        Common = 1000,
+        Rare = 100,
+        Epic = 10,
+        Legendary = 1,
+    }
+
+    [System.Serializable]
+    public class EncounterCardDefinition : CardDefinition
+    {
+        public StatsModifier attackStats, defenceStats;
+    }
+
+    public class CardDefinition : Definition
+    {
+        public string displayName;
+
+        [TextArea]
+        public string description;
+        public CardRarity rarity;
+        public string categoryId;
+    }
+
+    [System.Serializable]
+    public class ProficiencyDefinition : Definition
+    {
+        public ProficiencyDefinition (string id)
+        {
+            this.id = id;
+        }
+
+        public List<ProficiencyLevel> levels = new List<ProficiencyLevel> ();
+
+        [System.Serializable]
+        public class ProficiencyLevel
+        {
+            public enum Perk
+            {
+                None =0,
+                Consume =1,
+                Assassinate =2,
+                Command =3,
+            }
+
+            public int requiredPoints;
+
+            public StatsModifier attackModifier;
+            public StatsModifier defenceModifier;
+        }
+    }
+
+    [System.Serializable]
+    public class StatsModifier
+    {
+        public float alphaModifier = 0f;
+
+        //Elements
+        public float fireModifier = 0f;
+        public float frostModifier = 0f;
+        public float shockModifier = 0f;
+
+        public float poisonModifier = 0f;
+        public float bleedModifier = 0f;
+
+        public float sessionVariation = 0f;
+    }
+    #endregion
+
+
+    #region Data
+
     public class CategoryData : Data, IDefinable<CategoryDefinition>
     {
         public CategoryData (CategoryDefinition definition)
@@ -222,48 +306,5 @@
         }
     }
 
-    [System.Serializable]
-    public class LocationCardDefinition : Definition
-    {
-        [TextArea]
-        public string descriptionView;
-        [TextArea]
-        public string descriptionLand;
-        [TextArea]
-        public string descriptionActivate;
-
-        public List<string> encounters = new List<string> ();
-    }
-
-    [System.Serializable]
-    public class EncounterCardDefinition : Definition
-    {
-        public string displayName;
-
-        [TextArea]
-        public string description;
-
-        public List<string> categories;
-
-        public StatsModifier attackStats, defenceStats;
-    }
-
-    [System.Serializable]
-    public class StatsModifier
-    {
-        public float alphaModifier = 0f;
-
-        //Elements
-        public float fireModifier = 0f;
-        public float frostModifier = 0f;
-        public float shockModifier = 0f;
-
-        public float poisonModifier = 0f;
-        public float bleedModifier = 0f;
-
-        public float sessionVariation = 0f;
-    }
-
     #endregion
-
 }
