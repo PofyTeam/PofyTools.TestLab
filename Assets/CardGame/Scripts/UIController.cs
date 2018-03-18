@@ -3,11 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using PofyTools;
 using UnityEngine.UI;
+using PofyTools.UI;
 
 namespace Guvernal.CardGame
 {
     public class UIController : Panel
     {
+        [Header ("Panels")]
+        public DialogView dialogView;
+        public NotificationView notificationView;
+
         [SerializeField]
         protected Text _mainText;
 
@@ -18,6 +23,11 @@ namespace Guvernal.CardGame
             {
                 Board.gameStarted += this.OnGameStart;
                 Board.movedToField += this.OnMoveToField;
+
+                //Panels
+                this.dialogView.Subscribe ();
+                this.notificationView.Subscribe ();
+
                 return true;
             }
             return false;
@@ -29,6 +39,11 @@ namespace Guvernal.CardGame
             {
                 Board.gameStarted -= this.OnGameStart;
                 Board.movedToField -= this.OnMoveToField;
+
+                //Panels
+                this.dialogView.Unsubscribe ();
+                this.notificationView.Unsubscribe ();
+
                 return true;
             }
             return false;
