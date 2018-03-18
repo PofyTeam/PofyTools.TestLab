@@ -32,7 +32,14 @@
 
                 GameDefinitions.Inventory.AddWeapon (defaultWeaponData);
 
-                SoundManager.PlayMusic();
+                SoundManager.PlayMusic ();
+
+                Camera = Instantiate (this.gameCameraPrefab);
+                UI = Instantiate (this.uiControllerPrefab);
+
+                Camera.Initialize ();
+                UI.Initialize ();
+
                 this.isInitialized = true;
                 return true;
             }
@@ -48,6 +55,11 @@
             if (!this.isSubscribed)
             {
                 //Do Subscribe
+                GameManager.Camera.Subscribe ();
+                GameManager.UI.Subscribe ();
+                PofyTools.UI.NotificationView.Show ("Welcome", null, -1f);
+                PofyTools.UI.NotificationView.Show ("Game Definitions Initialized!", null, -1f);
+                PofyTools.UI.NotificationView.Show ("Game Manager Initialized!", null, -1f);
                 this.isSubscribed = true;
                 return true;
             }
@@ -59,6 +71,8 @@
             if (this.isSubscribed)
             {
                 //Do Unsubscribe
+                GameManager.Camera.Unsubscribe ();
+                GameManager.UI.Unsubscribe ();
                 this.isSubscribed = false;
                 return true;
             }
