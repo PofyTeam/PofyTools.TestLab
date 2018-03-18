@@ -190,95 +190,46 @@
         #endregion
     }
 
-    //TODO
-    //    [System.Serializable]
-    //    public class DataSet<T>:IInitializable where T:Data
-    //    {
-    //        [SerializeField]
-    //        protected List<T> _data = new List<T>();
-    //
-    //        [System.NonSerialized]
-    //        public Dictionary<string,T> data;
-    //        public string path;
-    //
-    //        public DefinitionSet(string path)
-    //        {
-    //            this.path = path;
-    //        }
-    //
-    //        #region IInitializable implementation
-    //
-    //        public virtual bool Initialize()
-    //        {
-    //            if (!this.isInitialized)
-    //            {
-    //                DefinitionSet<T>.LoadDefinitionSet(this);
-    //                this.definitions = new Dictionary<string, T>(this._definitions.Count);
-    //
-    //                foreach (var def in this._definitions)
-    //                {
-    //                    this.definitions[def.id] = def;
-    //                }
-    //
-    //                this.isInitialized = true;
-    //                return true;
-    //            }
-    //            return false;
-    //        }
-    //
-    //        public bool isInitialized
-    //        {
-    //            get;
-    //            protected set;
-    //        }
-    //
-    //        #endregion
-    //
-    //        #region API
-    //
-    //        public T GetDefinitionById(string id)
-    //        {
-    //            T result = default(T);
-    //
-    //            if (!this.isInitialized)
-    //            {
-    //                Debug.LogWarning("Definitions not initialized! " + typeof(T).ToString());
-    //                return result;
-    //            }
-    //
-    //            if (!this.definitions.TryGetValue(id, out result))
-    //                Debug.LogWarning("Definition not found: " + id);
-    //
-    //            return result;
-    //        }
-    //
-    //        #endregion
-    //
-    //        #region IO
-    //
-    //        public static void LoadDefinitionSet(DefinitionSet<T> definitionSet)
-    //        {
-    //            string fullPath = Application.dataPath + definitionSet.path;
-    //            if (!File.Exists(fullPath))
-    //            {
-    //                //SaveData();
-    //                return;
-    //            }
-    //
-    //            var json = File.ReadAllText(fullPath);
-    //            //            json = UnScramble(json);
-    //            //            json = DecodeFrom64(json);
-    //            JsonUtility.FromJsonOverwrite(json, definitionSet);
-    //
-    //            //            _data.PostLoad();
-    //        }
-    //
-    //        #endregion
-    //    }
+    public abstract class Data
+    {
+        public string id;
+    }
 
     public abstract class Definition
     {
         public string id;
+    }
+
+    public class DefinableData<T> : Data, IDefinable<T> where T : Definition
+    {
+        public DefinableData (T definition)
+        {
+            Define (definition);
+        }
+
+        #region IDefinable
+
+        public T definition
+        {
+            get;
+            protected set;
+        }
+
+        public bool isDefined { get { return this.definition != null; } }
+
+        public void Define (T definition)
+        {
+            this.definition = definition;
+            this.id = this.definition.id;
+        }
+
+        public void Undefine ()
+        {
+            this.definition = null;
+            this.id = string.Empty;
+        }
+
+        #endregion
     }
 
     public interface IDefinable<T> where T : Definition
@@ -293,11 +244,6 @@
         void Define (T definition);
 
         void Undefine ();
-    }
-
-    public abstract class Data
-    {
-        public string id;
     }
 
     public interface IDatable<T> where T : Data

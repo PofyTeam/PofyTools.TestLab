@@ -16,7 +16,10 @@
         public const string LOCATIONS_PATH = "/locations.json";
         public const string ENCOUNTERS_PATH = "/encounters.json";
         public const string CATEGORIES_PATH = "/categories.json";
+        public const string WEAPONS_PATH = "/weapons.json";
+
         public const string SEMANTICS_PATH = "/semantic_data.json";
+
         #endregion
 
         public const string TAG = "<color=red><b>GameDefinitions: </b></color>";
@@ -24,10 +27,12 @@
         public static DefinitionSet<LocationCardDefinition> Locations = new DefinitionSet<LocationCardDefinition> (GameDefinitions.DEFINITIONS_PATH + GameDefinitions.LOCATIONS_PATH);
         public static DefinitionSet<EncounterCardDefinition> Encounters = new DefinitionSet<EncounterCardDefinition> (GameDefinitions.DEFINITIONS_PATH + GameDefinitions.ENCOUNTERS_PATH);
         public static DefinitionSet<CategoryDefinition> Categories = new DefinitionSet<CategoryDefinition> (GameDefinitions.DEFINITIONS_PATH + GameDefinitions.CATEGORIES_PATH);
+        public static DefinitionSet<WeaponCardDefinition> Weapons = new DefinitionSet<WeaponCardDefinition> (GameDefinitions.DEFINITIONS_PATH + GameDefinitions.WEAPONS_PATH);
+
         public static SemanticData Semantics = new SemanticData (GameDefinitions.DEFINITIONS_PATH + GameDefinitions.SEMANTICS_PATH);
 
         public static CategoryDataSet CategoryData = null;
-
+        public static InventoryData Inventory = null;
         #region Singleton
 
         private static GameDefinitions _instance;
@@ -47,9 +52,12 @@
                 Locations.Initialize ();
                 Encounters.Initialize ();
                 Categories.Initialize ();
+                Weapons.Initialize ();
+
                 Semantics.Initialize ();
 
                 CategoryData = new CategoryDataSet (Categories);
+                Inventory = new InventoryData ();
 
                 _instance = new GameDefinitions ();
                 _instance.Initialize ();
@@ -62,8 +70,7 @@
             Locations.Reload ();
             Encounters.Reload ();
             Categories.Reload ();
-
-            //TODO: Reload Semantics?
+            Weapons.Reload ();
             //Semantics.Load();
 
             CategoryData = new CategoryDataSet (Categories);
@@ -95,6 +102,13 @@
     }
 
     #region Definitions
+    [System.Serializable]
+    public class PlayerDefiniton:Definition
+    {
+        public Range healthRange,staminaRange,focusRange;
+
+    }
+
     [System.Serializable]
     public class CategoryDefinition : Definition
     {
@@ -148,6 +162,10 @@
         [TextArea]
         public string description;
         public CardRarity rarity;
+    }
+
+    public class CategoryCardDefiniton : CardDefinition
+    {
         public string categoryId;
     }
 
@@ -166,10 +184,10 @@
         {
             public enum Perk
             {
-                None =0,
-                Consume =1,
-                Assassinate =2,
-                Command =3,
+                None = 0,
+                Consume = 1,
+                Assassinate = 2,
+                Command = 3,
             }
 
             public int requiredPoints;
@@ -194,50 +212,49 @@
 
         public float sessionVariation = 0f;
     }
-    #endregion
 
+    [System.Serializable]
+    public class WeaponCardDefinition : CardDefinition
+    {
+        public List<WeaponCharge> weaponCharges;
+    }
+
+    [System.Serializable]
+    public class ResourceCost
+    {
+        public ResourceType resource = ResourceType.None;
+        public float cost = 0f;
+    }
+
+    [System.Serializable]
+    public class WeaponCharge
+    {
+        public int proficiencyRequirement = 0;
+        public List<ResourceCost> costs = new List<ResourceCost> ();
+
+        //TODO: Extend on damage
+        public int damage = 0;
+        public Target target = Target.Single;
+    }
+
+    #endregion
 
     #region Data
 
-    public class CategoryData : Data, IDefinable<CategoryDefinition>
+
+    public class CategoryData : DefinableData<CategoryDefinition>
     {
-        public CategoryData (CategoryDefinition definition)
-        {
-            this.Define (definition);
-        }
+        public CategoryData (CategoryDefinition definition) : base (definition) { }
 
         #region API
         public void AddSubcategory (CategoryData data)
         {
             this.subcategories.Add (data.id);
         }
-
-        #endregion
-
-        #region IDefinable
-        public CategoryDefinition definition
-        {
-            get;
-            protected set;
-        }
-
-        public bool isDefined { get { return this.definition != null; } }
-
-        public void Define (CategoryDefinition definition)
-        {
-            this.definition = definition;
-            this.id = definition.id;
-        }
-
-        public void Undefine ()
-        {
-            this.definition = null;
-        }
         #endregion
 
         #region Runtime Data
         public List<string> subcategories = new List<string> ();
-
         #endregion
     }
 
@@ -306,5 +323,49 @@
         }
     }
 
+    public class InventoryCardData : DefinableData<CardDefinition>
+    {
+        public InventoryCardData (CardDefinition definiton) : base (definiton)
+        {
+        }
+    }
+
+    public class WeaponCardData : InventoryCardData
+    {
+        public WeaponCardData (CardDefinition definiton) : base (definiton)
+        {
+        }
+    }
+
+    public class InventoryData
+    {
+        public List<WeaponCardData> weapons = new List<WeaponCardData> ();
+
+        public void AddWeapon (WeaponCardData weapon)
+        {
+            if (!weapons.Contains (weapon))
+            {
+                this.weapons.Add (weapon);
+            }
+        }
+    }
+
     #endregion
+
+    public enum ResourceType
+    {
+        None = 0,
+        Health = 1,
+        Stamina = 2,
+        Focus = 3,
+    }
+
+    public enum Target
+    {
+        RandomSome = -2,
+        RandomSingle = -1,
+        None = 0,
+        Single = 1,
+        All = 2,
+    }
 }
