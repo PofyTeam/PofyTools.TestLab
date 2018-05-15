@@ -1,6 +1,5 @@
 ﻿namespace Guvernal.CardGame
 {
-    using System.Collections;
     using UnityEngine;
     using System.Collections.Generic;
     using UnityEngine.UI;
@@ -8,7 +7,7 @@
     using PofyTools.Distribution;
     using PofyTools.NameGenerator;
 
-    public class Board : MonoBehaviour, IInitializable, ISubscribable
+    public class Board : Panel
     {
         #region Components
 
@@ -29,11 +28,9 @@
 
         #region IInitializable
 
-        public bool isInitialized { get; protected set; }
-
-        public bool Initialize ()
+        public override bool Initialize ()
         {
-            if (!this.isInitialized)
+            if (base.Initialize())
             {
                 this._sprites[0] = this.all;
                 this._sprites[4] = this.no4;
@@ -52,7 +49,6 @@
                 this._sprites[336] = this.no336;
                 this._sprites[340] = this.no340;
 
-                this.isInitialized = true;
                 return true;
             }
             return false;
@@ -62,29 +58,25 @@
 
         #region ISubscribable
 
-        public bool isSubscribed { get; protected set; }
-
-        public bool Subscribe ()
+        public override bool Subscribe ()
         {
-            if (!this.isSubscribed)
+            if (base.Subscribe ())
             {
                 Unsubscribe ();
 
                 Board.requestGameStart += this.OnGameStartRequest;
                 Board.requestMove += this.OnMoveRequest;
-                this.isSubscribed = true;
                 return true;
             }
             return false;
         }
 
-        public bool Unsubscribe ()
+        public override bool Unsubscribe ()
         {
-            if (this.isSubscribed)
+            if (base.Unsubscribe ())
             {
                 Board.requestGameStart -= this.OnGameStartRequest;
                 Board.requestMove -= OnMoveRequest;
-                this.isSubscribed = false;
                 return true;
             }
             return false;
@@ -138,43 +130,43 @@
 
         #endregion
 
-        #region Data Editor
-        [Header ("Game Data")]
-        public List<CategoryDefinition> categoryDefs;
-        public List<EncounterCardDefinition> encountersDefs;
-        public List<LocationCardDefinition> locationsDefs;
+        //#region Data Editor
+        //[Header ("Game Data")]
+        //public List<CategoryDefinition> categoryDefs;
+        //public List<EncounterCardDefinition> encountersDefs;
+        //public List<LocationCardDefinition> locationsDefs;
 
-        public SemanticData semanticData;
+        //public SemanticData semanticData;
 
-        [ContextMenu ("Load Definitions")]
-        public void LoadDefinitions ()
-        {
-            GameDefinitions.Init ();
+        //[ContextMenu ("Load Definitions")]
+        //public void LoadDefinitions ()
+        //{
+        //    GameDefinitions.Init ();
 
-            this.semanticData = GameDefinitions.Semantics;
+        //    this.semanticData = GameDefinitions.Semantics;
 
-            this.categoryDefs = GameDefinitions.Categories.GetContent ();
-            this.encountersDefs = GameDefinitions.Encounters.GetContent ();
-            this.locationsDefs = GameDefinitions.Locations.GetContent ();
-        }
+        //    this.categoryDefs = GameDefinitions.Categories.GetContent ();
+        //    this.encountersDefs = GameDefinitions.Encounters.GetContent ();
+        //    this.locationsDefs = GameDefinitions.Locations.GetContent ();
+        //}
 
-        [ContextMenu ("Save Definitions")]
-        public void SaveDefinitions ()
-        {
-            GameDefinitions.Init ();
+        //[ContextMenu ("Save Definitions")]
+        //public void SaveDefinitions ()
+        //{
+        //    GameDefinitions.Init ();
 
-            GameDefinitions.Locations.SetContent (this.locationsDefs);
-            GameDefinitions.Locations.Save ();
-            GameDefinitions.Encounters.SetContent (this.encountersDefs);
-            GameDefinitions.Encounters.Save ();
-            GameDefinitions.Categories.SetContent (this.categoryDefs);
-            GameDefinitions.Categories.Save ();
+        //    GameDefinitions.Locations.SetContent (this.locationsDefs);
+        //    GameDefinitions.Locations.Save ();
+        //    GameDefinitions.Encounters.SetContent (this.encountersDefs);
+        //    GameDefinitions.Encounters.Save ();
+        //    GameDefinitions.Categories.SetContent (this.categoryDefs);
+        //    GameDefinitions.Categories.Save ();
 
-            GameDefinitions.Semantics = this.semanticData;
+        //    GameDefinitions.Semantics = this.semanticData;
 
-            GameDefinitions.Semantics.Save (GameDefinitions.DEFINITIONS_PATH + GameDefinitions.SEMANTICS_PATH);
-        }
-        #endregion
+        //    GameDefinitions.Semantics.Save (GameDefinitions.DEFINITIONS_PATH + GameDefinitions.SEMANTICS_PATH);
+        //}
+        //#endregion
 
         #region Map Generator
 
@@ -512,20 +504,6 @@
         public static void DirectionIdle (Direction direction) { }
         public static void FieldIdle (BoardField field) { }
         public static void VoidIdle () { }
-        #endregion
-
-        #region Mono
-
-        void Awake ()
-        {
-            RebuildBoard ();
-        }
-
-        void Start ()
-        {
-            Subscribe ();
-        }
-
         #endregion
     }
 

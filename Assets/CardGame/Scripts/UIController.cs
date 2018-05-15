@@ -12,9 +12,26 @@ namespace Guvernal.CardGame
         [Header ("Panels")]
         public DialogView dialogView;
         public NotificationView notificationView;
+        public Board boardView;
 
         [SerializeField]
         protected Text _mainText;
+
+        #region IInitialize
+
+        public override bool Initialize ()
+        {
+            if (base.Initialize ())
+            {
+                this.dialogView.Initialize ();
+                this.notificationView.Initialize ();
+                this.boardView.Initialize ();
+                return true;
+            }
+            return false;
+        }
+
+        #endregion
 
         #region ISubscribalbe
         public override bool Subscribe ()
@@ -27,6 +44,7 @@ namespace Guvernal.CardGame
                 //Panels
                 this.dialogView.Subscribe ();
                 this.notificationView.Subscribe ();
+                this.boardView.Subscribe ();
 
                 return true;
             }

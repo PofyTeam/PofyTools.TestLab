@@ -37,9 +37,13 @@
                 Camera = Instantiate (this.gameCameraPrefab);
                 UI = Instantiate (this.uiControllerPrefab);
 
+                Camera.gameObject.SetActive (true);
+                UI.gameObject.SetActive (true);
+
                 Camera.Initialize ();
                 UI.Initialize ();
 
+                PofyTools.UI.NotificationView.Show ("Game Manager Initialized!", null, -1f);
                 this.isInitialized = true;
                 return true;
             }
@@ -57,9 +61,9 @@
                 //Do Subscribe
                 GameManager.Camera.Subscribe ();
                 GameManager.UI.Subscribe ();
-                PofyTools.UI.NotificationView.Show ("Welcome", null, -1f);
-                PofyTools.UI.NotificationView.Show ("Game Definitions Initialized!", null, -1f);
-                PofyTools.UI.NotificationView.Show ("Game Manager Initialized!", null, -1f);
+                PofyTools.UI.NotificationView.Show ("Welcome!", null, -1f);
+                PofyTools.UI.DialogView.Show ("Woul you like to see the map?",
+                    PofyTools.UI.DialogView.Type.Cancel, delegate () { UI.boardView.Open (); });
                 this.isSubscribed = true;
                 return true;
             }

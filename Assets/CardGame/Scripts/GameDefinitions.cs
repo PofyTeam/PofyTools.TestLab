@@ -103,9 +103,9 @@
 
     #region Definitions
     [System.Serializable]
-    public class PlayerDefiniton:Definition
+    public class PlayerDefiniton : Definition
     {
-        public Range healthRange,staminaRange,focusRange;
+        public Range healthRange, staminaRange, focusRange;
 
     }
 
@@ -315,7 +315,7 @@
                         }
                     }
                 }
-
+                PofyTools.UI.NotificationView.Show ("Game Definitions Initialized!", null, -1f);
                 this.isInitialized = true;
                 return true;
             }
@@ -346,6 +346,7 @@
             if (!weapons.Contains (weapon))
             {
                 this.weapons.Add (weapon);
+                PofyTools.UI.NotificationView.Show ("Weapon added to inventory: " + weapon.definition.displayName, null, -1f);
             }
         }
     }

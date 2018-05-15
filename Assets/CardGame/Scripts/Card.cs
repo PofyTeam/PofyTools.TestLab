@@ -47,6 +47,18 @@
         }
 
         #endregion
+
+        #region Animation Events
+
+        public void OnEvent(int code)
+        {
+            if (code == 0)
+                PofyTools.Sound.SoundManager.PlayVariation ("CardPickAndFlip");
+            //else
+            //    PofyTools.Sound.SoundManager.PlayVariation ("CardPick");
+        }
+
+        #endregion
     }
 
 }
