@@ -1,5 +1,6 @@
 ﻿namespace PofyTools.Data
 {
+    using Extensions;
     using System.Collections.Generic;
     using System.IO;
     using System.Text;
@@ -14,11 +15,11 @@
     public abstract class DataSet<TKey, TValue> : IInitializable, IContentProvider<List<TValue>>
     {
         [SerializeField]
-        protected List<TValue> _content = new List<TValue> ();
+        protected List<TValue> _content = new List<TValue>();
 
         public Dictionary<TKey, TValue> content = null;
 
-        public abstract bool Initialize ();
+        public abstract bool Initialize();
 
         public virtual bool isInitialized { get; protected set; }
 
@@ -27,18 +28,18 @@
         /// </summary>
         /// <param name="key">Element's key.</param>
         /// <returns>Content's element.</returns>
-        public TValue GetValue (TKey key)
+        public TValue GetValue(TKey key)
         {
-            TValue result = default (TValue);
+            TValue result = default(TValue);
 
             if (!this.isInitialized)
             {
-                Debug.LogWarning ("Data Set Not Initialized! " + typeof (TValue).ToString ());
+                Debug.LogWarning("Data Set Not Initialized! " + typeof(TValue).ToString());
                 return result;
             }
 
-            if (!this.content.TryGetValue (key, out result))
-                Debug.LogWarning ("Value Not Found For Key: " + key);
+            if (!this.content.TryGetValue(key, out result))
+                Debug.LogWarning("Value Not Found For Key: " + key);
 
             return result;
         }
@@ -47,9 +48,9 @@
         /// Gets random element from content.
         /// </summary>
         /// <returns>Random element</returns>
-        public TValue GetRandom ()
+        public TValue GetRandom()
         {
-            return this._content.GetRandom ();
+            return this._content.GetRandom();
         }
 
         /// <summary>
@@ -57,7 +58,7 @@
         /// </summary>
         /// <param name="lastRandomIndex">Index of previously randomly obtained element.</param>
         /// <returns>Random element different from last random.</returns>
-        public TValue GetNextRandom (ref int lastRandomIndex)
+        public TValue GetNextRandom(ref int lastRandomIndex)
         {
             int newIndex = lastRandomIndex;
             int length = this._content.Count;
@@ -66,7 +67,7 @@
             {
                 do
                 {
-                    newIndex = Random.Range (0, length);
+                    newIndex = Random.Range(0, length);
                 }
                 while (lastRandomIndex == newIndex);
             }
@@ -84,19 +85,19 @@
             get { return this._content.Count; }
         }
 
-        public void SetContent (List<TValue> content)
+        public void SetContent(List<TValue> content)
         {
             this._content = content;
         }
 
-        public List<TValue> GetContent ()
+        public List<TValue> GetContent()
         {
             return this._content;
         }
 
-        public List<TKey> GetKeys ()
+        public List<TKey> GetKeys()
         {
-            return new List<TKey> (this.content.Keys);
+            return new List<TKey>(this.content.Keys);
         }
     }
 
@@ -116,18 +117,18 @@
         /// Definition Set via file path
         /// </summary>
         /// <param name="path">Definition set file path.</param>
-        public DefinitionSet (string path)
+        public DefinitionSet(string path)
         {
             this._path = path;
         }
 
         #region IInitializable implementation
 
-        public override bool Initialize ()
+        public override bool Initialize()
         {
             if (!this.isInitialized)
             {
-                Load ();
+                Load();
                 this.isInitialized = true;
                 return true;
             }
@@ -137,37 +138,37 @@
         #endregion
 
         #region Instance Methods
-        public void Save ()
+        public void Save()
         {
-            SaveDefinitionSet (this);
+            SaveDefinitionSet(this);
         }
-        
-        public void Load ()
+
+        public void Load()
         {
             //Read the list content from file
-            DefinitionSet<T>.LoadDefinitionSet (this);
+            DefinitionSet<T>.LoadDefinitionSet(this);
 
             //Create set's dictionary same size as list
-            this.content = new Dictionary<string, T> (this._content.Count);
+            this.content = new Dictionary<string, T>(this._content.Count);
 
             //Add definitions from list to dicionary
             foreach (var def in this._content)
             {
-                if (this.content.ContainsKey (def.id))
-                    Debug.LogWarning ("Key " + def.id + " present in the set. Overwriting...");
+                if (this.content.ContainsKey(def.id))
+                    Debug.LogWarning("Key " + def.id + " present in the set. Overwriting...");
                 this.content[def.id] = def;
             }
         }
 
-        public void Reload ()
+        public void Reload()
         {
-            DefinitionSet<T>.LoadDefinitionSet (this);
-            this.content.Clear ();
+            DefinitionSet<T>.LoadDefinitionSet(this);
+            this.content.Clear();
             //Add definitions from list to dicionary
             foreach (var def in this._content)
             {
-                if (this.content.ContainsKey (def.id))
-                    Debug.LogWarning ("Key " + def.id + " present in the set. Overwriting...");
+                if (this.content.ContainsKey(def.id))
+                    Debug.LogWarning("Key " + def.id + " present in the set. Overwriting...");
                 this.content[def.id] = def;
             }
         }
@@ -175,16 +176,16 @@
 
         #region IO
 
-        public static void LoadDefinitionSet (DefinitionSet<T> definitionSet)
+        public static void LoadDefinitionSet(DefinitionSet<T> definitionSet)
         {
             string fullPath = Application.dataPath + definitionSet._path;
-            DataUtility.LoadOverwrite (fullPath, definitionSet);
+            DataUtility.LoadOverwrite(fullPath, definitionSet);
         }
 
-        public static void SaveDefinitionSet (DefinitionSet<T> definitionSet)
+        public static void SaveDefinitionSet(DefinitionSet<T> definitionSet)
         {
             string fullPath = Application.dataPath + definitionSet._path;
-            DataUtility.Save (fullPath, definitionSet);
+            DataUtility.Save(fullPath, definitionSet);
         }
 
         #endregion
@@ -202,30 +203,30 @@
 
     public class DefinableData<T> : Data, IDefinable<T> where T : Definition
     {
-        public DefinableData (T definition)
+        public DefinableData(T definition)
         {
-            Define (definition);
+            Define(definition);
         }
 
         #region IDefinable
 
-        public T definition
+        public T Definition
         {
             get;
             protected set;
         }
 
-        public bool isDefined { get { return this.definition != null; } }
+        public bool IsDefined { get { return this.Definition != null; } }
 
-        public void Define (T definition)
+        public void Define(T definition)
         {
-            this.definition = definition;
-            this.id = this.definition.id;
+            this.Definition = definition;
+            this.id = this.Definition.id;
         }
 
-        public void Undefine ()
+        public void Undefine()
         {
-            this.definition = null;
+            this.Definition = null;
             this.id = string.Empty;
         }
 
@@ -234,24 +235,204 @@
 
     public interface IDefinable<T> where T : Definition
     {
-        T definition
+        T Definition
         {
             get;
         }
 
-        bool isDefined { get; }
+        bool IsDefined { get; }
 
-        void Define (T definition);
+        void Define(T definition);
 
-        void Undefine ();
+        void Undefine();
     }
 
     public interface IDatable<T> where T : Data
     {
         T data { get; }
 
-        void AppendData (T data);
+        void AppendData(T data);
 
-        void ReleaseData ();
+        void ReleaseData();
     }
+
+    public interface IContentProvider<T>
+    {
+        void SetContent(T content);
+
+        T GetContent();
+
+    }
+
+    public static class DataUtility
+    {
+        public const string TAG = "<color=yellow><b>DataUtility: </b></color>";
+
+        #region LOAD
+
+        public static void LoadOverwrite(string fullPath, object objectToOverwrite, bool unscramble = false, bool decode = false)
+        {
+            if (objectToOverwrite == null)
+            {
+                Debug.LogWarningFormat("{0}Object to overwrite is NULL! Aborting... (\"{1}\")", TAG, fullPath);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(fullPath))
+            {
+                Debug.LogWarningFormat("{0}Invalid path! Aborting...", TAG);
+                return;
+            }
+
+            if (!File.Exists(fullPath))
+            {
+                Debug.LogWarningFormat("{0}File \"{1}\" not found! Aborting...", TAG, fullPath);
+                return;
+            }
+
+            var json = File.ReadAllText(fullPath);
+
+            json = (unscramble) ? DataUtility.UnScramble(json) : json;
+            json = (decode) ? DataUtility.DecodeFrom64(json) : json;
+
+            JsonUtility.FromJsonOverwrite(json, objectToOverwrite);
+        }
+
+        //TODO: T Load
+
+        #endregion
+
+        #region SAVE
+
+        public static void Save(string fullPath, object objectToSave, bool scramble = false, bool encode = false)
+        {
+            if (objectToSave == null)
+            {
+                Debug.LogWarningFormat("{0}Object you are trying to save is NULL! Aborting... (\"{1}\")", TAG, fullPath);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(fullPath))
+            {
+                Debug.LogWarningFormat("{0}Invalid path! Aborting...", TAG);
+                return;
+            }
+
+            var json = JsonUtility.ToJson(objectToSave);
+
+            json = (encode) ? DataUtility.EncodeTo64(json) : json;
+            json = (scramble) ? DataUtility.Scramble(json) : json;
+
+            File.WriteAllText(fullPath, json);
+        }
+
+        #endregion
+
+        #region SCRAMBLE
+
+        static string Scramble(string toScramble)
+        {
+            StringBuilder toScrambleSB = new StringBuilder(toScramble);
+            StringBuilder scrambleAddition = new StringBuilder(toScramble.Substring(0, toScramble.Length / 2 + 1));
+            for (int i = 0, j = 0; i < toScrambleSB.Length; i = i + 2, ++j)
+            {
+                scrambleAddition[j] = toScrambleSB[i];
+                toScrambleSB[i] = 'c';
+            }
+
+            StringBuilder finalString = new StringBuilder();
+            int totalLength = toScrambleSB.Length;
+            string length = totalLength.ToString();
+            finalString.Append(length);
+            finalString.Append("!");
+            finalString.Append(toScrambleSB.ToString());
+            finalString.Append(scrambleAddition.ToString());
+
+            return finalString.ToString();
+        }
+
+        static string UnScramble(string scrambled)
+        {
+            int indexOfLenghtMarker = scrambled.IndexOf("!");
+            string strLength = scrambled.Substring(0, indexOfLenghtMarker);
+            int lengthOfRealData = int.Parse(strLength);
+            StringBuilder toUnscramble = new StringBuilder(scrambled.Substring(indexOfLenghtMarker + 1, lengthOfRealData));
+            string substitution = scrambled.Substring(indexOfLenghtMarker + 1 + lengthOfRealData);
+            for (int i = 0, j = 0; i < toUnscramble.Length; i = i + 2, ++j)
+                toUnscramble[i] = substitution[j];
+
+            return toUnscramble.ToString();
+        }
+
+        #endregion
+
+        #region ENCODE
+
+        public static string EncodeTo64(string toEncode)
+        {
+            byte[] toEncodeAsBytes = System.Text.Encoding.Unicode.GetBytes(toEncode);
+            string returnValue = System.Convert.ToBase64String(toEncodeAsBytes);
+            return returnValue;
+        }
+
+        public static string DecodeFrom64(string encodedData)
+        {
+            byte[] encodedDataAsBytes = System.Convert.FromBase64String(encodedData);
+            string returnValue = System.Text.Encoding.Unicode.GetString(encodedDataAsBytes);
+            return returnValue;
+        }
+
+        #endregion
+
+        #region Textures
+
+        public static void IncrementSaveToPNG(string filePath, string fileName, Texture2D texture)
+        {
+            int count = 0;
+
+            if (texture == null)
+            {
+                Debug.LogWarningFormat("{0}Texture you are trying to save is NULL! Aborting... (\"{1}\")", TAG, fileName);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(filePath) || string.IsNullOrEmpty(fileName))
+            {
+                Debug.LogWarningFormat("{0}Invalid path! Aborting...", TAG);
+                return;
+            }
+
+            if (filePath[filePath.Length - 1] != '/' && fileName[0] != '/')
+            {
+                filePath += "/";
+            }
+
+            while (File.Exists(filePath + fileName + count + ".png"))
+            {
+                count++;
+            }
+
+            SaveToPNG(filePath + fileName + count + ".png", texture);
+        }
+
+        public static void SaveToPNG(string fullPath, Texture2D texture)
+        {
+            if (texture == null)
+            {
+                Debug.LogWarningFormat("{0}Texture you are trying to save is NULL! Aborting... (\"{1}\")", TAG, fullPath);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(fullPath))
+            {
+                Debug.LogWarningFormat("{0}Invalid path! Aborting...", TAG);
+                return;
+            }
+
+            File.WriteAllBytes(fullPath, texture.EncodeToPNG());
+        }
+
+        #endregion
+    }
+
 }

@@ -62,8 +62,8 @@
                 GameManager.Camera.Subscribe ();
                 GameManager.UI.Subscribe ();
                 PofyTools.UI.NotificationView.Show ("Welcome!", null, -1f);
-                PofyTools.UI.DialogView.Show ("Woul you like to see the map?",
-                    PofyTools.UI.DialogView.Type.Cancel, delegate () { UI.boardView.Open (); });
+                //PofyTools.UI.DialogView.Show ("Woul you like to see the map?",
+                //    PofyTools.UI.DialogView.Type.Cancel, delegate () { UI.boardView.Open (); });
                 this.isSubscribed = true;
                 return true;
             }
