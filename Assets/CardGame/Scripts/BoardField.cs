@@ -50,7 +50,7 @@
 
         [SerializeField]
         protected bool _isInitialized;
-        public bool isInitialized { get { return this._isInitialized; } }
+        public bool IsInitialized { get { return this._isInitialized; } }
 
         public bool Initialize ()
         {

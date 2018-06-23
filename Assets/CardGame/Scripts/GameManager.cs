@@ -17,11 +17,11 @@
         public static GameCamera Camera { get; protected set; }
         public static UIController UI { get; protected set; }
         #region IInitalizable
-        public bool isInitialized { get; protected set; }
+        public bool IsInitialized { get; protected set; }
 
         public bool Initialize ()
         {
-            if (!this.isInitialized)
+            if (!this.IsInitialized)
             {
                 //Do Initialize
                 GameDefinitions.Init ();
@@ -44,7 +44,7 @@
                 UI.Initialize ();
 
                 PofyTools.UI.NotificationView.Show ("Game Manager Initialized!", null, -1f);
-                this.isInitialized = true;
+                this.IsInitialized = true;
                 return true;
             }
             return false;
@@ -52,11 +52,11 @@
         #endregion
 
         #region ISubscribable
-        public bool isSubscribed { get; protected set; }
+        public bool IsSubscribed { get; protected set; }
 
         public bool Subscribe ()
         {
-            if (!this.isSubscribed)
+            if (!this.IsSubscribed)
             {
                 //Do Subscribe
                 GameManager.Camera.Subscribe ();
@@ -64,7 +64,7 @@
                 PofyTools.UI.NotificationView.Show ("Welcome!", null, -1f);
                 //PofyTools.UI.DialogView.Show ("Woul you like to see the map?",
                 //    PofyTools.UI.DialogView.Type.Cancel, delegate () { UI.boardView.Open (); });
-                this.isSubscribed = true;
+                this.IsSubscribed = true;
                 return true;
             }
             return false;
@@ -72,12 +72,12 @@
 
         public bool Unsubscribe ()
         {
-            if (this.isSubscribed)
+            if (this.IsSubscribed)
             {
                 //Do Unsubscribe
                 GameManager.Camera.Unsubscribe ();
                 GameManager.UI.Unsubscribe ();
-                this.isSubscribed = false;
+                this.IsSubscribed = false;
                 return true;
             }
             return false;

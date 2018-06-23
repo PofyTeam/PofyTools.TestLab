@@ -21,7 +21,7 @@
 
         public abstract bool Initialize();
 
-        public virtual bool isInitialized { get; protected set; }
+        public virtual bool IsInitialized { get; protected set; }
 
         /// <summary>
         /// Gets content's element via key.
@@ -32,7 +32,7 @@
         {
             TValue result = default(TValue);
 
-            if (!this.isInitialized)
+            if (!this.IsInitialized)
             {
                 Debug.LogWarning("Data Set Not Initialized! " + typeof(TValue).ToString());
                 return result;
@@ -126,10 +126,10 @@
 
         public override bool Initialize()
         {
-            if (!this.isInitialized)
+            if (!this.IsInitialized)
             {
                 Load();
-                this.isInitialized = true;
+                this.IsInitialized = true;
                 return true;
             }
             return false;

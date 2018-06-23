@@ -36,8 +36,8 @@ public class PlayerRuntimeData
 
     public void UpdateStats (float deltaTime)
     {
-        this.health.current += this.healthRegenerationRate * deltaTime;
-        this.stamina.current += this.staminaRegenerationRate * deltaTime;
-        this.focus.current += this.focusRegenerationRate * deltaTime;
+        this.health.Current += this.healthRegenerationRate * deltaTime;
+        this.stamina.Current += this.staminaRegenerationRate * deltaTime;
+        this.focus.Current += this.focusRegenerationRate * deltaTime;
     }
 }

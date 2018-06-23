@@ -82,17 +82,17 @@
 
         public virtual bool Initialize ()
         {
-            if (!this.isInitialized)
+            if (!this.IsInitialized)
             {
 
                 Debug.Log (TAG + "Initialized!");
-                this.isInitialized = true;
+                this.IsInitialized = true;
                 return true;
             }
             return false;
         }
 
-        public bool isInitialized
+        public bool IsInitialized
         {
             get;
             protected set;
@@ -272,7 +272,7 @@
 
         public bool Initialize (List<CategoryDefinition> categoryDefs)
         {
-            if (!this.isInitialized)
+            if (!this.IsInitialized)
             {
                 this.content = new Dictionary<string, CategoryData> (categoryDefs.Count);
 
@@ -301,7 +301,7 @@
 
         public override bool Initialize ()
         {
-            if (!this.isInitialized)
+            if (!this.IsInitialized)
             {
 
                 foreach (var data in this._content)
@@ -316,7 +316,7 @@
                     }
                 }
                 PofyTools.UI.NotificationView.Show ("Game Definitions Initialized!", null, -1f);
-                this.isInitialized = true;
+                this.IsInitialized = true;
                 return true;
             }
             return false;

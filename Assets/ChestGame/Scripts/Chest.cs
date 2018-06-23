@@ -13,7 +13,7 @@ public class Chest : StateableActor, IAnimated, ICollidable
 
     protected Rigidbody _selfRigidBody;
 
-    public Rigidbody selfRigidbody
+    public Rigidbody SelfRigidbody
     {
         get
         {
@@ -23,7 +23,7 @@ public class Chest : StateableActor, IAnimated, ICollidable
 
     protected Collider _selfCollider;
 
-    public Collider selfCollider
+    public Collider SelfCollider
     {
         get
         {
@@ -37,7 +37,7 @@ public class Chest : StateableActor, IAnimated, ICollidable
 
     protected Animator _selfAnimator;
 
-    public Animator selfAnimator
+    public Animator SelfAnimator
     {
         get
         {
@@ -193,7 +193,7 @@ public class OpenChestState:StateObject<Chest>
 
             //newInfo.message.text = this.controlledObject.goldValues.PickNextCard().instance.ToString();
             newInfo.message.text = gold.ToString ();
-            newInfo.target = this.controlledObject.selfTransform;
+            newInfo.target = this.controlledObject.SelfTransform;
             newInfo.ResetFromPool();
             this._openSource = SoundManager.PlayVariation(this.controlledObject.coins);
             SoundManager.PlayCustomMusic(this.controlledObject.winMusic);
@@ -204,12 +204,12 @@ public class OpenChestState:StateObject<Chest>
             ScreenInfo newInfo = this.controlledObject.infoPool.Obtain();
 
             newInfo.message.text = "KITA!";
-            newInfo.target = this.controlledObject.selfTransform;
+            newInfo.target = this.controlledObject.SelfTransform;
             newInfo.ResetFromPool();
         }
 
-        this.controlledObject.selfRigidbody.isKinematic = true;
-        this.controlledObject.selfAnimator.SetTrigger("Open");
+        this.controlledObject.SelfRigidbody.isKinematic = true;
+        this.controlledObject.SelfAnimator.SetTrigger("Open");
         this._openSource = SoundManager.PlayVariation(this.controlledObject.chestOpen);
         base.EnterState();
     }
@@ -217,7 +217,7 @@ public class OpenChestState:StateObject<Chest>
     public override void ExitState()
     {
 //		this._controlledObject.selfRigidbody.isKinematic = false;
-        this.controlledObject.selfAnimator.SetTrigger("Close");
+        this.controlledObject.SelfAnimator.SetTrigger("Close");
         this._openSource = SoundManager.PlayVariation(this.controlledObject.chestClose);
         SoundManager.PlayCustomMusic(SoundManager.Sounds.music);
         this.controlledObject._fx.Stop();
