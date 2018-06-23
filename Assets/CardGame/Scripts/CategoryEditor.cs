@@ -1,5 +1,7 @@
-﻿using Guvernal.CardGame;
+﻿using Extensions;
+using Guvernal.CardGame;
 using PofyTools;
+using PofyTools.Data;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -25,7 +27,7 @@ public class CategoryEditor : MonoBehaviour, IContentProvider<List<string>>
         get
         {
             if (this._currentCategory != null)
-                return this._currentCategory.definition;
+                return this._currentCategory.Definition;
             else
                 return null;
         }
@@ -77,20 +79,25 @@ public class CategoryEditor : MonoBehaviour, IContentProvider<List<string>>
     {
         List<string> result = GameDefinitions.CategoryData.GetKeys ();
         result.Remove (this._currentCategory.id);
-        foreach (var baseCategory in this._currentCategory.definition.baseCategories)
+        foreach (var baseCategory in this._currentCategory.Definition.baseCategories)
         {
             result.Remove (baseCategory);
         }
         return result;
     }
 
+    public void SetContent(List<string> content)
+    {
+
+    }
+
     void OnEndEdit (string value)
     {
         if (!string.IsNullOrEmpty (value)
             && GameDefinitions.CategoryData.GetKeys ().Contains (value)
-            && !this._currentCategory.definition.baseCategories.Contains (value))
+            && !this._currentCategory.Definition.baseCategories.Contains (value))
         {
-            this._currentCategory.definition.baseCategories.Add (value);
+            this._currentCategory.Definition.baseCategories.Add (value);
         }
         ClearAll ();
         RefreshCategories ();
@@ -100,10 +107,10 @@ public class CategoryEditor : MonoBehaviour, IContentProvider<List<string>>
     public void SelectData (CategoryData data)
     {
         this._currentCategory = data;
-        this.displayName.text = data.definition.displayName;
-        this.categoryDescription.text = data.definition.categoryDescription;
+        this.displayName.text = data.Definition.displayName;
+        this.categoryDescription.text = data.Definition.categoryDescription;
 
-        foreach (var baseCategory in data.definition.baseCategories)
+        foreach (var baseCategory in data.Definition.baseCategories)
         {
             if (GameDefinitions.CategoryData.GetValue (baseCategory) != null)
                 AddCategoryPlate (baseCategory, CategoryPlate.Type.BaseCategory);
@@ -141,7 +148,7 @@ public class CategoryEditor : MonoBehaviour, IContentProvider<List<string>>
             case CategoryPlate.Type.BaseCategory:
                 plate.buttonRemoveCategory.onClick.AddListener (delegate ()
                 {
-                    this._currentCategory.definition.baseCategories.Remove (categoryKey);
+                    this._currentCategory.Definition.baseCategories.Remove (categoryKey);
                     SaveDefinitions ();
                     ClearAll ();
                     RefreshCategories ();
@@ -153,7 +160,7 @@ public class CategoryEditor : MonoBehaviour, IContentProvider<List<string>>
             case CategoryPlate.Type.Category:
                 plate.buttonRemoveCategory.onClick.AddListener (delegate ()
                 {
-                    this.categoryDefs.Remove (GameDefinitions.CategoryData.GetValue (categoryKey).definition);
+                    this.categoryDefs.Remove (GameDefinitions.CategoryData.GetValue (categoryKey).Definition);
                     SaveDefinitions ();
                     ClearAll ();
                     RefreshCategories ();
@@ -213,8 +220,8 @@ public class CategoryEditor : MonoBehaviour, IContentProvider<List<string>>
     {
         if (this._currentCategory != null)
         {
-            this._currentCategory.definition.displayName = this.displayName.text;
-            this._currentCategory.definition.categoryDescription = this.categoryDescription.text;
+            this._currentCategory.Definition.displayName = this.displayName.text;
+            this._currentCategory.Definition.categoryDescription = this.categoryDescription.text;
         }
 
         this.categoryDefs.Sort ((x, y) => x.id.CompareTo (y.id));

@@ -306,7 +306,7 @@
 
                 foreach (var data in this._content)
                 {
-                    foreach (var baseCategory in data.definition.baseCategories)
+                    foreach (var baseCategory in data.Definition.baseCategories)
                     {
                         CategoryData baseData;
                         if (this.content.TryGetValue (baseCategory, out baseData))
@@ -346,7 +346,7 @@
             if (!weapons.Contains (weapon))
             {
                 this.weapons.Add (weapon);
-                PofyTools.UI.NotificationView.Show ("Weapon added to inventory: " + weapon.definition.displayName, null, -1f);
+                PofyTools.UI.NotificationView.Show ("Weapon added to inventory: " + weapon.Definition.displayName, null, -1f);
             }
         }
     }

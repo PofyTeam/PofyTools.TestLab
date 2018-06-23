@@ -16,34 +16,42 @@
         private Transform _visual;
 
         #region IToggleable
-        public bool isOpen { get; protected set; }
+        public bool IsOpen { get; protected set; }
 
-        public void Close ()
+        public void Close()
         {
-            this._animator.SetBool ("IsActive", false);
-            this.isOpen = false;
+            this._animator.SetBool("IsActive", false);
+            this.IsOpen = false;
         }
 
-        public void Open ()
+        public void Open()
         {
-            this._animator.SetBool ("IsActive", true);
-            this.isOpen = true;
+            this._animator.SetBool("IsActive", true);
+            this.IsOpen = true;
         }
 
-        public void Toggle ()
+        public void Toggle(bool open)
         {
-            if (this.isOpen)
-                Close ();
+            if (open)
+                Open();
             else
-                Open ();
+                Close();
+        }
+
+        public void Toggle()
+        {
+            if (this.IsOpen)
+                Close();
+            else
+                Open();
         }
 
         #endregion
         #region Mono
 
-        void OnMouseDown ()
+        void OnMouseDown()
         {
-            Toggle ();
+            Toggle();
         }
 
         #endregion
@@ -53,7 +61,7 @@
         public void OnEvent(int code)
         {
             if (code == 0)
-                PofyTools.Sound.SoundManager.PlayVariation ("CardPickAndFlip");
+                PofyTools.Sound.SoundManager.PlayVariation("CardPickAndFlip");
             //else
             //    PofyTools.Sound.SoundManager.PlayVariation ("CardPick");
         }

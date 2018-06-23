@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using PofyTools.Data;
 
 public class AutocompleteInputField : MonoBehaviour
 {
@@ -73,7 +74,7 @@ public class AutocompleteInputField : MonoBehaviour
     }
 }
 
-public interface IContentProvider<T>
-{
-    T GetContent ();
-}
+//public interface IContentProvider<T>
+//{
+//    T GetContent ();
+//}

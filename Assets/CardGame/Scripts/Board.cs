@@ -6,6 +6,8 @@
     using PofyTools;
     using PofyTools.Distribution;
     using PofyTools.NameGenerator;
+    using Extensions;
+    using PofyTools.Data;
 
     public class Board : Panel
     {

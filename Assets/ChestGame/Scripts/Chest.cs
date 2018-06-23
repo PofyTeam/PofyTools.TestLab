@@ -5,6 +5,7 @@ using PofyTools;
 using PofyTools.Distribution;
 using PofyTools.Pool;
 using PofyTools.Sound;
+using PofyTools.UI;
 
 public class Chest : StateableActor, IAnimated, ICollidable
 {
