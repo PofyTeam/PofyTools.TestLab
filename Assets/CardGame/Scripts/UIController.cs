@@ -109,9 +109,9 @@ namespace Guvernal.CardGame
 
             public override void InitializeState ()
             {
-                this.hasUpdate = true;
-                this.ignoreStacking = true;
-                this.isPermanent = true;
+                this.HasUpdate = true;
+                this.IgnoreStacking = true;
+                this.IsPermanent = true;
 
                 base.InitializeState ();
             }
