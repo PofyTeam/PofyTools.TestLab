@@ -1,0 +1,86 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 468a46d0ae32c3544b7d98094e6448a9, type: 3}
+  m_Name: AddressableAssetSettings
+  m_EditorClassIdentifier: 
+  pathForAsset: Assets/AddressableAssetsData/AddressableAssetSettings.asset
+  m_groups:
+  - name: Built In Data
+    guid: bbaf68b0887372a4fb3e56806e8ad7d7
+    m_serializeEntries:
+    - m_guid: Resources
+      m_address: Resources
+      m_readOnly: 1
+      m_serializedLabels: []
+    - m_guid: EditorSceneList
+      m_address: EditorSceneList
+      m_readOnly: 1
+      m_serializedLabels: []
+    processor: {fileID: 11400000, guid: bbaf68b0887372a4fb3e56806e8ad7d7, type: 2}
+    isDefault: 0
+    readOnly: 1
+  - name: Default Local Group
+    guid: 8c360c4aa7a1d7a4eba0952721a14fc4
+    m_serializeEntries: []
+    processor: {fileID: 11400000, guid: 8c360c4aa7a1d7a4eba0952721a14fc4, type: 2}
+    isDefault: 1
+    readOnly: 0
+  m_buildSettings:
+    m_compression:
+      compression: 3
+      level: 5
+      blockSize: 131072
+    m_compileScriptsInVirtualMode: 0
+    m_bundleBuildPath: Temp/AddressableAssetsBundles
+  m_profileSettings:
+    m_profiles:
+    - m_inheritedParent: 
+      m_id: 06bd979eb4aa5e841a1b34efbe0f0d5d
+      m_profileName: Default
+      m_values:
+      - m_id: 5e4958411c7b3b14886c7d9de002a985
+        m_value: Assets/StreamingAssets
+      - m_id: c63ca73a3debc904183da43b976318fb
+        m_value: '{UnityEngine.Application.streamingAssetsPath}'
+      - m_id: 1b47ca27a32c6994bb9a57ccf66c23a7
+        m_value: ServerData/[UnityEditor.EditorUserBuildSettings.activeBuildTarget]
+      - m_id: 00a4b6b661dcbfd4b8dcaf1250f357f2
+        m_value: http://localhost/[UnityEditor.EditorUserBuildSettings.activeBuildTarget]
+      - m_id: dc31d9c5f8fa9a64e98a2d8a5be6f68f
+        m_value: 1
+      - m_id: 4957099a1b6fa45409cf9818c625b1ce
+        m_value: '[UnityEditor.EditorUserBuildSettings.activeBuildTarget]'
+    m_profileEntryNames:
+    - id: 68248853883c1fe4499eeede91dba07e
+      name: <custom>
+      inlineUsage: 1
+    - id: 5e4958411c7b3b14886c7d9de002a985
+      name: LocalBuildPath
+      inlineUsage: 0
+    - id: c63ca73a3debc904183da43b976318fb
+      name: LocalLoadPrefix
+      inlineUsage: 0
+    - id: 1b47ca27a32c6994bb9a57ccf66c23a7
+      name: RemoteBuildPath
+      inlineUsage: 0
+    - id: 00a4b6b661dcbfd4b8dcaf1250f357f2
+      name: RemoteLoadPrefix
+      inlineUsage: 0
+    - id: dc31d9c5f8fa9a64e98a2d8a5be6f68f
+      name: ContentVersion
+      inlineUsage: 0
+    - id: 4957099a1b6fa45409cf9818c625b1ce
+      name: BuildTarget
+      inlineUsage: 0
+  m_labelTable:
+    m_labelNames:
+    - default
+  m_activeProfileId: 06bd979eb4aa5e841a1b34efbe0f0d5d
