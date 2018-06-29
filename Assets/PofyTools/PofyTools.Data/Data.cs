@@ -12,14 +12,42 @@
     /// <typeparam name="TKey"> Key Type.</typeparam>
     /// <typeparam name="TValue">Value Type.</typeparam>
     [System.Serializable]
-    public abstract class DataSet<TKey, TValue> : IInitializable, IContentProvider<List<TValue>>
+    public abstract class DataSet<TKey, TValue> : IInitializable, IContentProvider<List<TValue>> where TValue : Data<TKey>
     {
         [SerializeField]
         protected List<TValue> _content = new List<TValue>();
 
-        public Dictionary<TKey, TValue> content = null;
+        public Dictionary<TKey, TValue> content = new Dictionary<TKey, TValue>();
 
-        public abstract bool Initialize();
+        public virtual bool Initialize()
+        {
+            if (!this.IsInitialized)
+            {
+                if (this._content.Count == 0)
+                {
+                    BuildDictionary();
+                    this.IsInitialized = true;
+                    return true;
+                }
+
+                Debug.LogWarning("Content not available. Aborting Data Set Initialization... " + typeof(TValue).ToString());
+                return false;
+            }
+            return false;
+        }
+
+        protected void BuildDictionary()
+        {
+            this.content.Clear();
+            
+            //Add content from list to dictionary
+            foreach (var element in this._content)
+            {
+                if (this.content.ContainsKey(element.id))
+                    Debug.LogWarning("Id " + element.id + " present in the set. Overwriting...");
+                this.content[element.id] = element;
+            }
+        }
 
         public virtual bool IsInitialized { get; protected set; }
 
@@ -85,12 +113,12 @@
             get { return this._content.Count; }
         }
 
-        public void SetContent(List<TValue> content)
+        public virtual void SetContent(List<TValue> content)
         {
             this._content = content;
         }
 
-        public List<TValue> GetContent()
+        public virtual List<TValue> GetContent()
         {
             return this._content;
         }
@@ -126,13 +154,8 @@
 
         public override bool Initialize()
         {
-            if (!this.IsInitialized)
-            {
-                Load();
-                this.IsInitialized = true;
-                return true;
-            }
-            return false;
+            Load();
+            return base.Initialize();
         }
 
         #endregion
@@ -148,16 +171,16 @@
             //Read the list content from file
             DefinitionSet<T>.LoadDefinitionSet(this);
 
-            //Create set's dictionary same size as list
-            this.content = new Dictionary<string, T>(this._content.Count);
+            ////Create set's dictionary same size as list
+            //this.content = new Dictionary<string, T>(this._content.Count);
 
-            //Add definitions from list to dicionary
-            foreach (var def in this._content)
-            {
-                if (this.content.ContainsKey(def.id))
-                    Debug.LogWarning("Key " + def.id + " present in the set. Overwriting...");
-                this.content[def.id] = def;
-            }
+            ////Add definitions from list to dicionary
+            //foreach (var def in this._content)
+            //{
+            //    if (this.content.ContainsKey(def.id))
+            //        Debug.LogWarning("Key " + def.id + " present in the set. Overwriting...");
+            //    this.content[def.id] = def;
+            //}
         }
 
         public void Reload()
@@ -191,17 +214,40 @@
         #endregion
     }
 
-    public abstract class Data
+    /// <summary>
+    /// Collection of loaded data.
+    /// </summary>
+    /// <typeparam name="TData">Data Type</typeparam>
+    /// <typeparam name="TDefinition">Definition Type</typeparam>
+    [System.Serializable]
+    public class DefinableDataSet<TData, TDefinition> : DataSet<string, TData> where TData : DefinableData<TDefinition> where TDefinition : Definition
     {
-        public string id;
+        public override bool Initialize()
+        {
+            return base.Initialize();
+        }
+
+        public void DefineSet(DefinitionSet<TDefinition> definitionSet)
+        {
+            foreach (var data in this._content)
+            {
+                data.Define(definitionSet.GetValue(data.id));
+            }
+        }
+
     }
 
-    public abstract class Definition
+    public abstract class Data<T>
     {
-        public string id;
+        public T id;
     }
 
-    public class DefinableData<T> : Data, IDefinable<T> where T : Definition
+    public abstract class Definition : Data<string>
+    {
+        //public string id;
+    }
+
+    public class DefinableData<T> : Data<string>, IDefinable<T> where T : Definition
     {
         public DefinableData(T definition)
         {
@@ -247,11 +293,11 @@
         void Undefine();
     }
 
-    public interface IDatable<T> where T : Data
+    public interface IDatable<TKey, TValue> where TValue : Data<TKey>
     {
-        T data { get; }
+        TValue Data { get; }
 
-        void AppendData(T data);
+        void AppendData(TValue data);
 
         void ReleaseData();
     }
@@ -269,25 +315,32 @@
         public const string TAG = "<color=yellow><b>DataUtility: </b></color>";
 
         #region LOAD
+        public enum LoadResult : int
+        {
+            NullObject = -3,
+            NullPath = -2,
+            FileNotFound = -1,
+            Done = 0
+        }
 
-        public static void LoadOverwrite(string fullPath, object objectToOverwrite, bool unscramble = false, bool decode = false)
+        public static LoadResult LoadOverwrite(string fullPath, object objectToOverwrite, bool unscramble = false, bool decode = false)
         {
             if (objectToOverwrite == null)
             {
                 Debug.LogWarningFormat("{0}Object to overwrite is NULL! Aborting... (\"{1}\")", TAG, fullPath);
-                return;
+                return LoadResult.NullObject;
             }
 
             if (string.IsNullOrEmpty(fullPath))
             {
                 Debug.LogWarningFormat("{0}Invalid path! Aborting...", TAG);
-                return;
+                return LoadResult.NullPath;
             }
 
             if (!File.Exists(fullPath))
             {
                 Debug.LogWarningFormat("{0}File \"{1}\" not found! Aborting...", TAG, fullPath);
-                return;
+                return LoadResult.FileNotFound;
             }
 
             var json = File.ReadAllText(fullPath);
@@ -296,6 +349,7 @@
             json = (decode) ? DataUtility.DecodeFrom64(json) : json;
 
             JsonUtility.FromJsonOverwrite(json, objectToOverwrite);
+            return LoadResult.Done;
         }
 
         //TODO: T Load
