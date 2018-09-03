@@ -48,7 +48,7 @@ public class AimState: StateObject<CameraController>
 
     public override void InitializeState()
     {
-        this.hasUpdate = true;
+        this.HasUpdate = true;
         base.InitializeState();
     }
 

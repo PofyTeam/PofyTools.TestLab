@@ -5,6 +5,7 @@ using PofyTools;
 using PofyTools.Distribution;
 using PofyTools.Pool;
 using PofyTools.Sound;
+using PofyTools.UI;
 
 public class Chest : StateableActor, IAnimated, ICollidable
 {
@@ -12,7 +13,7 @@ public class Chest : StateableActor, IAnimated, ICollidable
 
     protected Rigidbody _selfRigidBody;
 
-    public Rigidbody selfRigidbody
+    public Rigidbody SelfRigidbody
     {
         get
         {
@@ -22,7 +23,7 @@ public class Chest : StateableActor, IAnimated, ICollidable
 
     protected Collider _selfCollider;
 
-    public Collider selfCollider
+    public Collider SelfCollider
     {
         get
         {
@@ -36,7 +37,7 @@ public class Chest : StateableActor, IAnimated, ICollidable
 
     protected Animator _selfAnimator;
 
-    public Animator selfAnimator
+    public Animator SelfAnimator
     {
         get
         {
@@ -100,7 +101,7 @@ public class Chest : StateableActor, IAnimated, ICollidable
 
     public bool isOpen
     {
-        get{ return this.openState.isActive; }
+        get{ return this.openState.IsActive; }
     }
 
     [ContextMenu("Open Chest")]
@@ -172,7 +173,7 @@ public class OpenChestState:StateObject<Chest>
 
     public override void InitializeState()
     {
-        this.hasUpdate = true;
+        this.HasUpdate = true;
         base.InitializeState();
     }
 
@@ -180,46 +181,46 @@ public class OpenChestState:StateObject<Chest>
 
     public override void EnterState()
     {
-        this.controlledObject.goldTransform.gameObject.SetActive (false);
+        this.ControlledObject.goldTransform.gameObject.SetActive (false);
         int gold = Chance.GenerateDigits(3,50,999);
         Debug.Log (gold);
         //if (this.controlledObject.chanceToGold.RandomValue)
         if(gold>0)
         {
 			
-            this.controlledObject.goldTransform.gameObject.SetActive(true);
-            ScreenInfo newInfo = this.controlledObject.infoPool.Obtain();
+            this.ControlledObject.goldTransform.gameObject.SetActive(true);
+            ScreenInfo newInfo = this.ControlledObject.infoPool.Obtain();
 
             //newInfo.message.text = this.controlledObject.goldValues.PickNextCard().instance.ToString();
             newInfo.message.text = gold.ToString ();
-            newInfo.target = this.controlledObject.selfTransform;
+            newInfo.target = this.ControlledObject.SelfTransform;
             newInfo.ResetFromPool();
-            this._openSource = SoundManager.PlayVariation(this.controlledObject.coins);
-            SoundManager.PlayCustomMusic(this.controlledObject.winMusic);
-            this.controlledObject._fx.Play();
+            this._openSource = SoundManager.PlayVariation(this.ControlledObject.coins);
+            SoundManager.PlayCustomMusic(this.ControlledObject.winMusic);
+            this.ControlledObject._fx.Play();
         }
         else
         {
-            ScreenInfo newInfo = this.controlledObject.infoPool.Obtain();
+            ScreenInfo newInfo = this.ControlledObject.infoPool.Obtain();
 
             newInfo.message.text = "KITA!";
-            newInfo.target = this.controlledObject.selfTransform;
+            newInfo.target = this.ControlledObject.SelfTransform;
             newInfo.ResetFromPool();
         }
 
-        this.controlledObject.selfRigidbody.isKinematic = true;
-        this.controlledObject.selfAnimator.SetTrigger("Open");
-        this._openSource = SoundManager.PlayVariation(this.controlledObject.chestOpen);
+        this.ControlledObject.SelfRigidbody.isKinematic = true;
+        this.ControlledObject.SelfAnimator.SetTrigger("Open");
+        this._openSource = SoundManager.PlayVariation(this.ControlledObject.chestOpen);
         base.EnterState();
     }
 
     public override void ExitState()
     {
 //		this._controlledObject.selfRigidbody.isKinematic = false;
-        this.controlledObject.selfAnimator.SetTrigger("Close");
-        this._openSource = SoundManager.PlayVariation(this.controlledObject.chestClose);
+        this.ControlledObject.SelfAnimator.SetTrigger("Close");
+        this._openSource = SoundManager.PlayVariation(this.ControlledObject.chestClose);
         SoundManager.PlayCustomMusic(SoundManager.Sounds.music);
-        this.controlledObject._fx.Stop();
+        this.ControlledObject._fx.Stop();
         base.ExitState();
     }
 

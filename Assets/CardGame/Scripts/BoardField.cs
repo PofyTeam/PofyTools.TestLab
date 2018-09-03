@@ -50,7 +50,7 @@
 
         [SerializeField]
         protected bool _isInitialized;
-        public bool isInitialized { get { return this._isInitialized; } }
+        public bool IsInitialized { get { return this._isInitialized; } }
 
         public bool Initialize ()
         {
@@ -107,7 +107,25 @@
             return this.board.GetField (this.coordinates.x-1, this.coordinates.y);
         }
 
+        public BoardField GetNorthWestField ()
+        {
+            return this.board.GetField (this.coordinates.x - 1, this.coordinates.y+1);
+        }
 
+        public BoardField GetNorthEastField ()
+        {
+            return this.board.GetField (this.coordinates.x + 1, this.coordinates.y + 1);
+        }
+
+        public BoardField GetSouthWestField ()
+        {
+            return this.board.GetField (this.coordinates.x - 1, this.coordinates.y - 1);
+        }
+        
+        public BoardField GetSouthEastField ()
+        {
+            return this.board.GetField (this.coordinates.x + 1, this.coordinates.y - 1);
+        }
         #endregion
     }
 }

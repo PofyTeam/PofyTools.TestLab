@@ -1,13 +1,15 @@
 ﻿namespace Guvernal.CardGame
 {
-    using System.Collections;
     using UnityEngine;
     using System.Collections.Generic;
     using UnityEngine.UI;
     using PofyTools;
     using PofyTools.Distribution;
+    using PofyTools.NameGenerator;
+    using Extensions;
+    using PofyTools.Data;
 
-    public class Board : MonoBehaviour, IInitializable, ISubscribable
+    public class Board : Panel
     {
         #region Components
 
@@ -28,11 +30,9 @@
 
         #region IInitializable
 
-        public bool isInitialized { get; protected set; }
-
-        public bool Initialize()
+        public override bool Initialize ()
         {
-            if (!this.isInitialized)
+            if (base.Initialize())
             {
                 this._sprites[0] = this.all;
                 this._sprites[4] = this.no4;
@@ -51,7 +51,6 @@
                 this._sprites[336] = this.no336;
                 this._sprites[340] = this.no340;
 
-                this.isInitialized = true;
                 return true;
             }
             return false;
@@ -61,29 +60,25 @@
 
         #region ISubscribable
 
-        public bool isSubscribed { get; protected set; }
-
-        public bool Subscribe()
+        public override bool Subscribe ()
         {
-            if (!this.isSubscribed)
+            if (base.Subscribe ())
             {
                 Unsubscribe();
 
                 Board.requestGameStart += this.OnGameStartRequest;
                 Board.requestMove += this.OnMoveRequest;
-                this.isSubscribed = true;
                 return true;
             }
             return false;
         }
 
-        public bool Unsubscribe()
+        public override bool Unsubscribe ()
         {
-            if (this.isSubscribed)
+            if (base.Unsubscribe ())
             {
                 Board.requestGameStart -= this.OnGameStartRequest;
                 Board.requestMove -= OnMoveRequest;
-                this.isSubscribed = false;
                 return true;
             }
             return false;
@@ -137,9 +132,48 @@
 
         #endregion
 
+        //#region Data Editor
+        //[Header ("Game Data")]
+        //public List<CategoryDefinition> categoryDefs;
+        //public List<EncounterCardDefinition> encountersDefs;
+        //public List<LocationCardDefinition> locationsDefs;
+
+        //public SemanticData semanticData;
+
+        //[ContextMenu ("Load Definitions")]
+        //public void LoadDefinitions ()
+        //{
+        //    GameDefinitions.Init ();
+
+        //    this.semanticData = GameDefinitions.Semantics;
+
+        //    this.categoryDefs = GameDefinitions.Categories.GetContent ();
+        //    this.encountersDefs = GameDefinitions.Encounters.GetContent ();
+        //    this.locationsDefs = GameDefinitions.Locations.GetContent ();
+        //}
+
+        //[ContextMenu ("Save Definitions")]
+        //public void SaveDefinitions ()
+        //{
+        //    GameDefinitions.Init ();
+
+        //    GameDefinitions.Locations.SetContent (this.locationsDefs);
+        //    GameDefinitions.Locations.Save ();
+        //    GameDefinitions.Encounters.SetContent (this.encountersDefs);
+        //    GameDefinitions.Encounters.Save ();
+        //    GameDefinitions.Categories.SetContent (this.categoryDefs);
+        //    GameDefinitions.Categories.Save ();
+
+        //    GameDefinitions.Semantics = this.semanticData;
+
+        //    GameDefinitions.Semantics.Save (GameDefinitions.DEFINITIONS_PATH + GameDefinitions.SEMANTICS_PATH);
+        //}
+        //#endregion
+
         #region Map Generator
 
-        [Header("Island Parameters")]
+        [Space]
+        [Header ("Island Parameters")]
         public Color groundColor;
         public Color visitedColor;
 
@@ -240,19 +274,28 @@
 
         }
 
-        public void SetFieldSprite(BoardField field)
+        private List<Sprite> _compareSprites = new List<Sprite> ();
+
+        public void SetFieldSprite (BoardField field)
         {
+            this._compareSprites.Clear ();
+
             if (field.image.sprite == null)
                 return;
             int score = 0;
-            BoardField north, west, east, south;
+            BoardField north, west, east, south, northEast, northWest, southEast, southWest;
 
             north = field.GetNorthField();
             west = field.GetWestField();
             east = field.GetEastField();
             south = field.GetSouthField();
 
-            Sprite spriteNorth = null, spriteWest = null, fieldSprite = null;
+            northEast = field.GetNorthEastField ();
+            northWest = field.GetNorthWestField ();
+            southEast = field.GetSouthEastField ();
+            southWest = field.GetSouthWestField ();
+
+            Sprite fieldSprite = null;
 
             if (north == null || north.type == BoardField.Type.Water)
                 score += 4;
@@ -266,10 +309,10 @@
             if (south == null || south.type == BoardField.Type.Water)
                 score += 256;
 
-            if (north != null)
-                spriteNorth = north.image.sprite;
-            if (west != null)
-                spriteWest = west.image.sprite;
+            if (southWest != null) this._compareSprites.Add (southWest.image.sprite);
+            if (south != null) this._compareSprites.Add (south.image.sprite);
+            if (southEast != null) this._compareSprites.Add (southEast.image.sprite);
+            if (west != null) this._compareSprites.Add (south.image.sprite);
 
             if (score == 0)
             {
@@ -281,14 +324,15 @@
                 {
                     fieldSprite = this._sprites[score].GetRandom();
                 }
-                while (fieldSprite == spriteNorth || fieldSprite == spriteWest);
+                while (this._compareSprites.Contains (fieldSprite));
 
                 field.image.sprite = fieldSprite;
             }
         }
 
-        [ContextMenu("Clear Board")]
-        public void ClearBoard()
+
+        [ContextMenu ("Clear Board")]
+        public void ClearBoard ()
         {
             this._rectTransform.ClearChildren();
             this._allFields.Clear();
@@ -462,20 +506,6 @@
         public static void DirectionIdle(Direction direction) { }
         public static void FieldIdle(BoardField field) { }
         public static void VoidIdle() { }
-        #endregion
-
-        #region Mono
-
-        void Awake()
-        {
-            RebuildBoard();
-        }
-
-        void Start()
-        {
-            Subscribe();
-        }
-
         #endregion
     }
 
