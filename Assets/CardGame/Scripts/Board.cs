@@ -20,7 +20,7 @@
         #endregion
 
         #region Runtimes
-        [Header ("Runtimes")]
+        [Header("Runtimes")]
         public Image selector;
         public Image iconHome;
         protected BoardField _currentField;
@@ -30,7 +30,7 @@
 
         public bool isInitialized { get; protected set; }
 
-        public bool Initialize ()
+        public bool Initialize()
         {
             if (!this.isInitialized)
             {
@@ -63,11 +63,11 @@
 
         public bool isSubscribed { get; protected set; }
 
-        public bool Subscribe ()
+        public bool Subscribe()
         {
             if (!this.isSubscribed)
             {
-                Unsubscribe ();
+                Unsubscribe();
 
                 Board.requestGameStart += this.OnGameStartRequest;
                 Board.requestMove += this.OnMoveRequest;
@@ -77,7 +77,7 @@
             return false;
         }
 
-        public bool Unsubscribe ()
+        public bool Unsubscribe()
         {
             if (this.isSubscribed)
             {
@@ -93,23 +93,23 @@
 
         #region Listeners
 
-        public void OnMoveRequest (Direction direction)
+        public void OnMoveRequest(Direction direction)
         {
             BoardField nextField = null;
 
             switch (direction)
             {
                 case Direction.South:
-                    nextField = this._currentField.GetSouthField ();
+                    nextField = this._currentField.GetSouthField();
                     break;
                 case Direction.West:
-                    nextField = this._currentField.GetWestField ();
+                    nextField = this._currentField.GetWestField();
                     break;
                 case Direction.East:
-                    nextField = this._currentField.GetEastField ();
+                    nextField = this._currentField.GetEastField();
                     break;
                 case Direction.North:
-                    nextField = this._currentField.GetNorthField ();
+                    nextField = this._currentField.GetNorthField();
                     break;
 
                 default:
@@ -117,36 +117,38 @@
             }
 
             if (nextField != null && (int)nextField.type >= 2)
-                MoveToField (nextField);
+                MoveToField(nextField);
         }
 
-        public void OnGameStartRequest ()
+        public void OnGameStartRequest()
         {
             int lastRandom = -1;
             BoardField homeField = null;
             while (homeField == null || homeField.type != BoardField.Type.Land)
             {
-                homeField = this._allFields.GetNextRandom (ref lastRandom);
+                homeField = this._allFields.GetNextRandom(ref lastRandom);
             }
 
-            MoveToField (homeField);
-            MakeHome (homeField);
+            MoveToField(homeField);
+            MakeHome(homeField);
 
-            Board.gameStarted ();
+            Board.gameStarted();
         }
 
         #endregion
 
         #region Map Generator
 
-        [Header ("Island Parameters")]
+        [Header("Island Parameters")]
         public Color groundColor;
         public Color visitedColor;
 
         public float groundBais;
 
+        [Header("Perlin Noise")]
         public bool usePerlin;
         public float perlinStrength;
+        public int perlinSeed = 0;
 
         public bool useCosine;
 
@@ -162,11 +164,11 @@
         Sprite[] sprites;
 
         [SerializeField]
-        protected List<BoardField> _allFields = new List<BoardField> ();
+        protected List<BoardField> _allFields = new List<BoardField>();
 
-        public void AddField (int x, int y)
+        public void AddField(int x, int y)
         {
-            var field = Instantiate<BoardField> (this.fieldPrefab);
+            var field = Instantiate<BoardField>(this.fieldPrefab);
 
             float chanceX = 0;
             float chanceY = 0;
@@ -177,32 +179,32 @@
 
             if (this.useCosine)
             {
-                chanceX = Mathf.Cos (((x - (this.boardSize.x) * 0.5f) / ((this.boardSize.x) * 0.5f)) * Mathf.PI);
-                chanceY = Mathf.Cos (((y - (this.boardSize.y) * 0.5f) / ((this.boardSize.y) * 0.5f)) * Mathf.PI);
+                chanceX = Mathf.Cos(((x - (this.boardSize.x) * 0.5f) / ((this.boardSize.x) * 0.5f)) * Mathf.PI);
+                chanceY = Mathf.Cos(((y - (this.boardSize.y) * 0.5f) / ((this.boardSize.y) * 0.5f)) * Mathf.PI);
                 influencerCount++;
             }
 
             if (this.usePerlin)
             {
-                perlin = this.perlinStrength * (0.5f - Mathf.PerlinNoise (((float)x / this.boardSize.x) * 8, (((float)y / this.boardSize.y)) * 8));
+                perlin = this.perlinStrength * (0.5f - Mathf.PerlinNoise(((float)x / this.boardSize.x) * 8 + this.perlinSeed, (((float)y / this.boardSize.y) + this.perlinSeed) * 8));
 
                 influencerCount++;
             }
 
             if (this.useTexture && this.mapTexture != null)
             {
-                pixel = this.mapTexture.GetPixelBilinear ((float)x / this.boardSize.x, (float)y / this.boardSize.y).grayscale;
+                pixel = this.mapTexture.GetPixelBilinear((float)x / this.boardSize.x, (float)y / this.boardSize.y).grayscale;
                 //Debug.Log ("Pixel: " + pixel);
                 influencerCount++;
             }
 
-            float chance = Mathf.Clamp01 (((chanceX + chanceY + perlin + pixel) / Mathf.Max (influencerCount, 1)) + this.groundBais);
+            float chance = Mathf.Clamp01(((chanceX + chanceY + perlin + pixel) / Mathf.Max(influencerCount, 1)) + this.groundBais);
 
-            field.Initialize (this, new Vector2Int (x, y));
+            field.Initialize(this, new Vector2Int(x, y));
             field.groundChance = chance;
-            field.transform.SetParent (this._rectTransform, false);
+            field.transform.SetParent(this._rectTransform, false);
 
-            if (x != 0 && y != 0 && x != this.boardSize.x - 1 && y != this.boardSize.y - 1 && Chance.TryWithChance (chance))
+            if (x != 0 && y != 0 && x != this.boardSize.x - 1 && y != this.boardSize.y - 1 && Chance.TryWithChance(chance))
             {
                 field.type = BoardField.Type.Land;
 
@@ -214,41 +216,41 @@
             {
                 field.type = BoardField.Type.Water;
                 field.image.sprite = null;
-                field.image.color = new Color ();
+                field.image.color = new Color();
             }
 
             this._fields[x, y] = field;
-            this._allFields.Add (field);
+            this._allFields.Add(field);
 
             field.name = "x: " + x + " - y: " + y;
         }
 
-        public void PopulateBoard ()
+        public void PopulateBoard()
         {
-            this._grid.cellSize = new Vector2Int ((int)this._rectTransform.sizeDelta.x / Mathf.Max (this.boardSize.x, 1), (int)this._rectTransform.sizeDelta.y / Mathf.Max (this.boardSize.y, 1));
+            this._grid.cellSize = new Vector2Int((int)this._rectTransform.sizeDelta.x / Mathf.Max(this.boardSize.x, 1), (int)this._rectTransform.sizeDelta.y / Mathf.Max(this.boardSize.y, 1));
             this._fields = new BoardField[this.boardSize.x, this.boardSize.y];
 
             for (int i = 0; i < this.boardSize.y; ++i)
             {
                 for (int j = 0; j < this.boardSize.x; ++j)
                 {
-                    AddField (j, i);
+                    AddField(j, i);
                 }
             }
 
         }
 
-        public void SetFieldSprite (BoardField field)
+        public void SetFieldSprite(BoardField field)
         {
             if (field.image.sprite == null)
                 return;
             int score = 0;
             BoardField north, west, east, south;
 
-            north = field.GetNorthField ();
-            west = field.GetWestField ();
-            east = field.GetEastField ();
-            south = field.GetSouthField ();
+            north = field.GetNorthField();
+            west = field.GetWestField();
+            east = field.GetEastField();
+            south = field.GetSouthField();
 
             Sprite spriteNorth = null, spriteWest = null, fieldSprite = null;
 
@@ -271,13 +273,13 @@
 
             if (score == 0)
             {
-                fieldSprite = this._sprites[score].GetRandom ();
+                fieldSprite = this._sprites[score].GetRandom();
             }
             else
             {
                 do
                 {
-                    fieldSprite = this._sprites[score].GetRandom ();
+                    fieldSprite = this._sprites[score].GetRandom();
                 }
                 while (fieldSprite == spriteNorth || fieldSprite == spriteWest);
 
@@ -285,43 +287,41 @@
             }
         }
 
-        [ContextMenu ("Clear Board")]
-        public void ClearBoard ()
+        [ContextMenu("Clear Board")]
+        public void ClearBoard()
         {
-            this._rectTransform.ClearChildren ();
-            this._allFields.Clear ();
+            this._rectTransform.ClearChildren();
+            this._allFields.Clear();
 
         }
 
-        [ContextMenu ("Rebuild Board")]
-        public void RebuildBoard ()
+        [ContextMenu("Rebuild Board")]
+        public void RebuildBoard()
         {
-            ClearBoard ();
-            Initialize ();
-            PopulateBoard ();
-            DrawDebugImage ();
-            ReskinBoard ();
+            ClearBoard();
+            Initialize();
+            PopulateBoard();
+            DrawDebugImage();
+            ReskinBoard();
         }
         public Texture2D debugTexture;
 
-        public void DrawDebugImage ()
+        public void DrawDebugImage()
         {
             //Create NewTexture
-            this.debugTexture = new Texture2D (this.boardSize.x, this.boardSize.y);
-
-
+            this.debugTexture = new Texture2D(this.boardSize.x, this.boardSize.y, TextureFormat.Alpha8, false);
 
             for (int y = 0; y < this.boardSize.y; ++y)
             {
                 for (int x = 0; x < this.boardSize.x; ++x)
                 {
-                    var field = this.GetField (x, y);
-                    debugTexture.SetPixel (x, y, new Color (field.groundChance, field.groundChance, field.groundChance, 1f));
+                    var field = this.GetField(x, y);
+                    debugTexture.SetPixel(x, y, new Color(field.groundChance, field.groundChance, field.groundChance, field.groundChance));
                 }
             }
 
             //Refresh Texture for displaying
-            this.debugTexture.Apply ();
+            this.debugTexture.Apply();
             //this.debugTexture = FlipTexture (this.debugTexture);
 
             //Set Properties
@@ -329,7 +329,7 @@
             this.debugTexture.filterMode = FilterMode.Point;
             this.debugTexture.wrapMode = TextureWrapMode.Clamp;
 
-            var sprite = Sprite.Create (this.debugTexture, new Rect (0, 0, this.boardSize.x, this.boardSize.y), Vector2.zero, 100);
+            var sprite = Sprite.Create(this.debugTexture, new Rect(0, 0, this.boardSize.x, this.boardSize.y), Vector2.zero, 100);
             sprite.name = "DebugSprite";
 
             this.debugImage.sprite = sprite;
@@ -355,19 +355,19 @@
 
         //}
 
-        [ContextMenu ("Reskin Board")]
-        public void ReskinBoard ()
+        [ContextMenu("Reskin Board")]
+        public void ReskinBoard()
         {
             foreach (var field in this._allFields)
             {
-                SetFieldSprite (field);
+                SetFieldSprite(field);
             }
         }
 
-        [ContextMenu ("Save Distribution Map")]
-        public void SaveDistributionMap ()
+        [ContextMenu("Save Distribution Map")]
+        public void SaveDistributionMap()
         {
-            DataUtility.IncrementSaveToPNG (Application.dataPath, "map_", this.debugTexture);
+            DataUtility.IncrementSaveToPNG(Application.dataPath, "map_", this.debugTexture);
         }
 
         #endregion
@@ -397,7 +397,7 @@
             no336,
             no340;
 
-        public Dictionary<int, List<Sprite>> _sprites = new Dictionary<int, List<Sprite>> ();
+        public Dictionary<int, List<Sprite>> _sprites = new Dictionary<int, List<Sprite>>();
 
 
         #endregion
@@ -410,9 +410,9 @@
         /// <param name="x"> Horizontal Coordinate</param>
         /// <param name="y">Vertical Coordinate</param>
         /// <returns>Board Field</returns>
-        public BoardField GetField (int x, int y)
+        public BoardField GetField(int x, int y)
         {
-            if (x > this._fields.GetLength (0) - 1 || x < 0 || y > this._fields.GetLength (1) - 1 || y < 0)
+            if (x > this._fields.GetLength(0) - 1 || x < 0 || y > this._fields.GetLength(1) - 1 || y < 0)
             {
                 return null;
             }
@@ -420,31 +420,31 @@
             return this._fields[x, y];
         }
 
-        public void MoveToField (BoardField field)
+        public void MoveToField(BoardField field)
         {
             this._currentField = field;
-            this.selector.gameObject.SetActive (true);
-            this.selector.rectTransform.SetParent (field.image.rectTransform, true);
+            this.selector.gameObject.SetActive(true);
+            this.selector.rectTransform.SetParent(field.image.rectTransform, true);
             this.selector.rectTransform.localPosition = Vector3.zero;
             //this.selector.rectTransform.SetPositionAndRotation (Vector3.zero, Quaternion.identity);
             this.selector.rectTransform.sizeDelta = field.image.rectTransform.sizeDelta;
-            this.selector.rectTransform.ForceUpdateRectTransforms ();
+            this.selector.rectTransform.ForceUpdateRectTransforms();
             field.image.color = this.visitedColor;
-            Board.movedToField (field);
+            Board.movedToField(field);
 
         }
 
-        public void MakeHome (BoardField field)
+        public void MakeHome(BoardField field)
         {
             if (field.type == BoardField.Type.Land)
             {
                 field.type = BoardField.Type.Home;
             }
-            this.iconHome.gameObject.SetActive (true);
-            this.iconHome.rectTransform.SetParent (field.image.rectTransform, true);
+            this.iconHome.gameObject.SetActive(true);
+            this.iconHome.rectTransform.SetParent(field.image.rectTransform, true);
             this.iconHome.rectTransform.localPosition = Vector3.zero;
             this.iconHome.rectTransform.sizeDelta = field.image.rectTransform.sizeDelta;
-            this.iconHome.rectTransform.ForceUpdateRectTransforms ();
+            this.iconHome.rectTransform.ForceUpdateRectTransforms();
 
 
         }
@@ -459,29 +459,29 @@
         public static DirectionDelegate requestMove = DirectionIdle;
         public static BoardFieldDelegate movedToField = FieldIdle;
 
-        public static void DirectionIdle (Direction direction) { }
-        public static void FieldIdle (BoardField field) { }
-        public static void VoidIdle () { }
+        public static void DirectionIdle(Direction direction) { }
+        public static void FieldIdle(BoardField field) { }
+        public static void VoidIdle() { }
         #endregion
 
         #region Mono
 
-        void Awake ()
+        void Awake()
         {
-            RebuildBoard ();
+            RebuildBoard();
         }
 
-        void Start ()
+        void Start()
         {
-            Subscribe ();
+            Subscribe();
         }
 
         #endregion
     }
 
-    public delegate void VoidDelegate ();
-    public delegate void DirectionDelegate (Direction direction);
-    public delegate void BoardFieldDelegate (BoardField field);
+    public delegate void VoidDelegate();
+    public delegate void DirectionDelegate(Direction direction);
+    public delegate void BoardFieldDelegate(BoardField field);
 
 
     public enum Direction
